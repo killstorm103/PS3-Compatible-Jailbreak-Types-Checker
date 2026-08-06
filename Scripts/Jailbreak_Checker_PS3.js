@@ -1,5 +1,3 @@
-<!-- ========== SCRIPTS (all checker logic, zoom, and page init) ========== -->
-    <script src="https://cdn.jsdelivr.net/gh/killstorm103/Rebugger-ToolBox/dev/Scripts/Platform_Checker.js"></script>
     <script>
         // ---- Helper functions (trim, parse, etc.) ----
         function trimStr(str) { return str.replace(/^\s+|\s+$/g, ''); }
