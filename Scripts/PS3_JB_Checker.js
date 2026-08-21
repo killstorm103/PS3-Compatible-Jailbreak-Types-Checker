@@ -1,4 +1,3 @@
-// ---- Helper functions ----
 function trimStr(str) { return str.replace(/^\s+|\s+$/g, ''); }
 
 function parseFullDate(dateStr) {
@@ -295,13 +294,74 @@ function runChecker(datecode) {
     var html = '';
     html += '<span style="color:'+cfwColor+';">CFW: ' + cfw + '</span><br>';
     html += '<span style="color:'+qcfwColor+';">qCFW: ' + qcfw + '</span><br>';
-    html += '<span style="color:#28a745;">HEN: Yes</span><br><br>';
+    html += '<span style="color:#28a745;">HEN: Yes</span>';
+    if (typeof window.ShowJailbreakTypes !== 'undefined' && window.ShowJailbreakTypes === true) 
+    {
+        html += '<button type="button" style="display:block; margin-top:15px; margin-bottom:5px; padding:6px 18px; background:#555; color:#fff; border:1px solid #777; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="var d=document.getElementById(\'JBTypesDropdown\'); if(d.style.display===\'none\'){d.style.display=\'block\';this.textContent=\'Hide Jailbreak Types Info\';}else{d.style.display=\'none\';this.textContent=\'Show Jailbreak Types Info\';}">Show Jailbreak Types Info</button>';
+        html += '<div id="JBTypesDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
+        
+        
+        html += '<strong style="color:#dc3545;">Custom Firmware (CFW):</strong>';
+        html += '<span>Grants you full control over the console you can install Linux and install homebrew and play game backups etc from start/boot up without having to do anything and you have the ability to convert to DEX.</span>';
+        html += '<span>Not all PS3s can run CFW, All Fat Models and some Slim Models can run CFW</span><br><br>';
+        
+        
+        
+        html += '<strong style="color:#dc3545;">Quasi-Custom Firmware (qCFW):</strong>';
+        html += '<span>' + "a type of Custom Firmware for PS3 models that cannot run standard CFW and for now only avabilable for PS3s with a NOR flash memory type. Installation requires a hardware modification (soldering work), the process starts by installing HEN and using it to run initial tools — but once installed, qCFW boots directly like a normal CFW, with no need to enable HEN every time. You can do almost everything a regular CFW can, with a few exceptions: you cannot convert to DEX, you cannot dump the console's EID root key and anything else that required your consoles EID root key, and you cannot use old firmwares like REBUG. New firmware must be made. Currently the only qCFW is based on Evilnat PEX." + '</span><br><br>';
+        
+        html += '<strong style="color:#dc3545;">Homebrew Enabler (HEN):</strong>';
+        html += '<span>A temporary Homebrew Enabler you have to re-activate every time you turn on the console. No DEX conversion, less system-level access than CFW.</span>';
+        
+        
+        html += '</div>';
+    }
+    alert ("ShowJailbreakTypes Exists Check: " + window.ShowJailbreakTypes);
+    html += '<br><br>';
+    
+    
     html += 'Model Number: '+displayModel+'<br>';
     html += 'Model: '+modelType+'<br>';
     html += 'Flash Memory Type: '+flash+'<br>';
-    html += 'PS2 Backwards Compatibility: '+getBackwardsCompatibility(null, cleaned, false)+'<br>';
+    html += 'PS2 Backwards Compatibility: '+ getBackwardsCompatibility(null, cleaned, false)+'<br>';
     if (maxDowngradeFirmware) html += 'Estimated Minimum Applicable Firmware Version: ' + maxDowngradeFirmware + ' (Also Known As: Max Downgrade Version, Factory Firmware)' + '<br>';
     if (isDevKit) html += '<span style="color:#f79452;">Info: Jailbreaking a Dev Kit PS3 is not recommended!</span><br>';
+    
+    if (typeof window.ShowTutorials !== 'undefined' && window.ShowTutorials === true) 
+    {
+        html += '<button type="button" style="display:block; margin-top:15px; margin-bottom:5px; padding:6px 18px; background:#555; color:#fff; border:1px solid #777; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="var d=document.getElementById(\'detailsDropdown\'); if(d.style.display===\'none\'){d.style.display=\'block\';this.textContent=\'Hide Jailbreaking Tutorial\';}else{d.style.display=\'none\';this.textContent=\'Show Jailbreaking Tutorial\';}">Show Jailbreaking Tutorial</button>';
+        html += '<div id="detailsDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
+        
+        
+        html += '<strong style="color:#dc3545;">Custom Firmware:</strong>';
+        html += '<span>Toolset [<a href="https://www.ps3toolset.com/bgtoolset/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=LIVu3Px3eXY" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</span><br>';
+        
+        html += '<span>PS3Tool [<a href="https://ps3tool.com/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://ps3tool.com/tutorials/cfw-flash-tools/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Tutorial</a>]</span><br>';
+        
+        html += '<span>Unofficial Flash Writer [<a href="https://xxevilnatxx.github.io/flash-writer/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=rwqk_8mJy30" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</span><br>';
+        
+        // E3 Flasher line with [Video] and [Note] side-by-side
+        html += '<span>E3 Flasher (For NOR PS3s) [<a href="https://www.youtube.com/watch?v=cah4-8dFBfI&list=PLwbQqS9RRrfRi1tmV1fUGI2b_4hm_iyQd&index=28" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>] ';
+        html += '[<span onclick="var n=document.getElementById(\'e3Note\'); if(n.style.display===\'none\'){n.style.display=\'block\';this.textContent=\'Note ▶\';}else{n.style.display=\'none\';this.textContent=\'Note ▲\';}" style="color:#f79452; cursor:pointer; font-weight:bold; user-select:none;">Note ▲</span>]</span><br>';
+        
+        // Note dropdown box (hidden by default)
+        html += '<div id="e3Note" style="display:none; background:#2a2a2a; border-radius:4px; border-left:3px solid #dc3545; padding:8px 12px; margin-top:5px; margin-bottom:5px;">';
+        html += '<span>Make sure you get an old Micro SD (2GB Max) (Example: a Genuine SanDisk 2GB Micro SD Memory Card), as anything bigger or newer will hardware brick the Flasher!</span>';
+        html += '</div>';
+        
+        html += '<span>Teensy++ 2.0 (For NAND PS3s) [<a href="https://ptodorov.com/playstation-3-nand-downgrade-guide-cechc04-cok-002/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Guide</a>]</span><br><br>';
+        
+        html += '<strong style="color:#dc3545;">Quasi-Custom Firmware:</strong>';
+        html += '<span>PS3Xploit [<a href="https://ps3xploit.me/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://github.com/aomsin2526/BadWDSD" target="_blank" rel="noopener noreferrer" style="color:#f79452;">qCFW Link</a>] [<a href="https://www.youtube.com/watch?v=a5cPD0uuifA" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</span><br><br>';
+        
+        html += '<strong style="color:#dc3545;">Homebrew Enabler:</strong>';
+        
+        html += '<span>PS3Xploit [<a href="https://ps3xploit.me/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=Ze3UMdMakvk" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</span><br>';
+        html += '<span>PS3Tool [<a href="https://ps3tool.com/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>]</span><br>';
+        html += '</div>';
+    }
+    
+    
     resultDiv.innerHTML = html;
     document.getElementById('datecode-box').style.display = 'none';
     if (/^CECH-?25/.test(cleaned) || /^DECH-?25/.test(cleaned)) document.getElementById('datecode-box').style.display = 'block';
