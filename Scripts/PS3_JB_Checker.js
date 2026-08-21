@@ -302,7 +302,7 @@ function runChecker(datecode) {
     if (maxDowngradeFirmware) html += 'Estimated Minimum Applicable Firmware Version: ' + maxDowngradeFirmware + ' (Also Known As: Max Downgrade Version, Factory Firmware)' + '<br>';
     if (isDevKit) html += '<span style="color:#f79452;">Info: Jailbreaking a Dev Kit PS3 is not recommended!</span><br>';
     
-    if (typeof window.showMinVerDetails !== 'undefined' && window.showMinVerDetails === true) 
+    if (typeof window.ShowTutorials !== 'undefined' && window.ShowTutorials === true) 
     {
         html += '<button type="button" style="display:block; margin-top:15px; margin-bottom:5px; padding:6px 18px; background:#555; color:#fff; border:1px solid #777; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="var d=document.getElementById(\'detailsDropdown\'); if(d.style.display===\'none\'){d.style.display=\'block\';this.textContent=\'Hide Jailbreaking Tutorial\';}else{d.style.display=\'none\';this.textContent=\'Show Jailbreaking Tutorial\';}">Show Jailbreaking Tutorial</button>';
         html += '<div id="detailsDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
