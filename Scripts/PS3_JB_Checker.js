@@ -294,7 +294,31 @@ function runChecker(datecode) {
     var html = '';
     html += '<span style="color:'+cfwColor+';">CFW: ' + cfw + '</span><br>';
     html += '<span style="color:'+qcfwColor+';">qCFW: ' + qcfw + '</span><br>';
-    html += '<span style="color:#28a745;">HEN: Yes</span><br><br>';
+    html += '<span style="color:#28a745;">HEN: Yes</span>';
+    if (typeof window.ShowJailbreakTypes !== 'undefined' && window.ShowJailbreakTypes === true) 
+    {
+        html += '<button type="button" style="display:block; margin-top:15px; margin-bottom:5px; padding:6px 18px; background:#555; color:#fff; border:1px solid #777; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="var d=document.getElementById(\'JBTypesDropdown\'); if(d.style.display===\'none\'){d.style.display=\'block\';this.textContent=\'Hide Jailbreak Types Info\';}else{d.style.display=\'none\';this.textContent=\'Show Jailbreak Types Info\';}">Show Jailbreak Types Info</button>';
+        html += '<div id="JBTypesDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
+        
+        
+        html += '<strong style="color:#dc3545;">Custom Firmware (CFW):</strong>';
+        html += '<span>Grants you full control over the console you can install Linux and install homebrew and play game backups etc from start/boot up without having to do anything and you have the ability to convert to DEX.</span>';
+        html += '<span>Not all PS3s can run CFW, All Fat Models and some Slim Models can run CFW</span><br><br>';
+        
+        
+        
+        html += '<strong style="color:#dc3545;">Quasi-Custom Firmware (qCFW):</strong>';
+        html += '<span>' + "a type of Custom Firmware for PS3 models that cannot run standard CFW and for now only avabilable for PS3s with a NOR flash memory type. Installation requires a hardware modification (soldering work), the process starts by installing HEN and using it to run initial tools — but once installed, qCFW boots directly like a normal CFW, with no need to enable HEN every time. You can do almost everything a regular CFW can, with a few exceptions: you cannot convert to DEX, you cannot dump the console's EID root key and anything else that required your consoles EID root key, and you cannot use old firmwares like REBUG. New firmware must be made. Currently the only qCFW is based on Evilnat PEX." + '</span><br><br>';
+        
+        html += '<strong style="color:#dc3545;">Homebrew Enabler (HEN):</strong>';
+        html += '<span>A temporary Homebrew Enabler you have to re-activate every time you turn on the console. No DEX conversion, less system-level access than CFW.</span>';
+        
+        
+        html += '</div>';
+    }
+    html += '<br><br>';
+    
+    
     html += 'Model Number: '+displayModel+'<br>';
     html += 'Model: '+modelType+'<br>';
     html += 'Flash Memory Type: '+flash+'<br>';
