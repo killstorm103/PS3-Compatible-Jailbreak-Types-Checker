@@ -316,7 +316,6 @@ function runChecker(datecode) {
         
         html += '</div>';
     }
-    alert ("ShowJailbreakTypes Exists Check: " + window.ShowJailbreakTypes);
     html += '<br><br>';
     
     
