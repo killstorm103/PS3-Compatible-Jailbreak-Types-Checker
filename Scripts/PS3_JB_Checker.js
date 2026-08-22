@@ -311,7 +311,7 @@ function runChecker(datecode) {
         html += '<span>' + "a type of Custom Firmware for PS3 models that cannot run standard CFW and for now only avabilable for PS3s with a NOR flash memory type. Installation requires a hardware modification (soldering work), the process starts by installing HEN and using it to run initial tools — but once installed, qCFW boots directly like a normal CFW, with no need to enable HEN every time. You can do almost everything a regular CFW can, with a few exceptions: you cannot convert to DEX, you cannot dump the console's EID root key and anything else that required your consoles EID root key, and you cannot use old firmwares like REBUG. New firmware must be made. Currently the only qCFW is based on Evilnat PEX." + '</span><br><br>';
         
         html += '<strong style="color:#dc3545;">Homebrew Enabler (HEN):</strong>';
-        html += '<span>A temporary Homebrew Enabler you have to re-activate every time you turn on the console. No DEX conversion, less system-level access than CFW.</span>';
+        html += '<span>' + "A temporary Homebrew Enabler you have to re-activate every time you turn on the console. No DEX conversion, less system-level access than CFW, you can't install Linux." + '</span>';
         
         
         html += '</div>';
@@ -319,7 +319,7 @@ function runChecker(datecode) {
     html += '<br><br>';
     
     
-    html += 'Model Number: '+displayModel+'<br>';
+    html += 'Model Number: ' + displayModel + (datecode ? ' (' + (/^\d/.test(datecode) ? 'date code' : 'manufacturing date') + ': ' + datecode + ')' : '') + '<br>';
     html += 'Model: '+modelType+'<br>';
     html += 'Flash Memory Type: '+flash+'<br>';
     html += 'PS2 Backwards Compatibility: '+ getBackwardsCompatibility(null, cleaned, false)+'<br>';
