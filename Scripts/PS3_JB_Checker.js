@@ -301,7 +301,7 @@ function runChecker(datecode) {
         html += '<div id="JBTypesDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
         
         
-        html += '<strong style="color:#dc3545;">Custom Firmware (CFW):</strong>';
+        html += '<strong style="color:#dc3545;">Custom Firmware (CFW):</strong><br>';
         html += '<span>Grants you full control over the console you can install Linux and install homebrew and play game backups etc from start/boot up without having to do anything and you have the ability to convert to DEX.</span>';
         html += '<span>Not all PS3s can run CFW, All Fat Models and some Slim Models can run CFW</span><br><br>';
         
@@ -332,7 +332,7 @@ function runChecker(datecode) {
         html += '<div id="detailsDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
         
         
-        html += '<strong style="color:#dc3545;">Custom Firmware:</strong>';
+        html += '<strong style="color:#dc3545;">Custom Firmware:</strong><br>';
         html += '<span>Toolset [<a href="https://www.ps3toolset.com/bgtoolset/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=LIVu3Px3eXY" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</span><br>';
         
         html += '<span>PS3Tool [<a href="https://ps3tool.com/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://ps3tool.com/tutorials/cfw-flash-tools/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Tutorial</a>]</span><br>';
