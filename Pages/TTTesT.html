@@ -92,7 +92,6 @@
     </script>
     
     <style>
-        /* existing styles – unchanged */
         #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; cursor: pointer; text-align: center; padding: 20px; box-sizing: border-box; }
         #image-overlay img { max-width: 90%; max-height: 90%; margin-top: 5%; border-radius: 8px; box-shadow: 0 0 30px #000; }
         .fixed-header { background: #111; padding: 10px 20px; border-bottom: 3px solid #dc3545; color: #fff; font-family: sans-serif; }
@@ -221,7 +220,6 @@
         </div>
     </div>
 
-    <!-- External scripts -->
     <script src="https://cdn.jsdelivr.net/gh/killstorm103/Rebugger-ToolBox@dev/Scripts/Correction.js"></script>
 
     <!-- ============================================================ -->
@@ -721,18 +719,19 @@
     </script>
 
     <!-- ============================================================ -->
-    <!-- WebKit Exploit – with firmware-aware addresses               -->
+    <!-- WebKit Exploit – with firmware‑aware addresses from HEN     -->
     <!-- ============================================================ -->
     <script>
         (function() {
 
-            // ---- Firmware detection (same as HEN) ----
+            // ---- Firmware detection ----
             var ua = navigator.userAgent;
             var fwv = ua.substring(ua.indexOf("5.0 (") + 19, ua.indexOf(") Apple"));
             if (!fwv && window.ps3Firmware) fwv = window.ps3Firmware;
 
             // ---- Address tables (from HEN source) ----
             var addr = {
+                // Default for 4.93 (also 4.83-4.92)
                 toc_addr: 0x6F5558,
                 gadget1_addr: 0x097604,
                 gadget_mod1_addr: 0x60EFD8,
@@ -741,10 +740,12 @@
                 gadget_mod4b_addr: 0x42C778,
                 gadget_mod4c_addr: 0x054AF0,
                 gadget_mod8_addr: 0x2BACB8,
-                gadget8_addr: 0x2BACB8
+                gadget8_addr: 0x2BACB8,  // callsub gadget (for 4.83+)
+                gadget3_addr: 0x0D9684,  // same as mod4a
+                gadget7_addr: 0x423854
             };
 
-            // Override based on firmware
+            // Override based on firmware (from HEN)
             if (fwv === "4.80") {
                 addr.toc_addr = 0x6F5520;
                 addr.gadget1_addr = 0x097604;
@@ -754,6 +755,9 @@
                 addr.gadget_mod4b_addr = 0x42C7E0;
                 addr.gadget_mod4c_addr = 0x054AF0;
                 addr.gadget_mod8_addr = 0x2BACB0;
+                addr.gadget8_addr = 0x20000;  // from HEN gadget8_addr
+                addr.gadget3_addr = 0x0D9684;  // same as mod4a
+                addr.gadget7_addr = 0x1A6AC;   // HEN gadget_mod7_addr
             } else if (fwv === "4.81") {
                 addr.toc_addr = 0x6F5520;
                 addr.gadget1_addr = 0x097604;
@@ -763,6 +767,9 @@
                 addr.gadget_mod4b_addr = 0x42C7D4;
                 addr.gadget_mod4c_addr = 0x054AF0;
                 addr.gadget_mod8_addr = 0x2BACB4;
+                addr.gadget8_addr = 0x20000;
+                addr.gadget3_addr = 0x0D9684;
+                addr.gadget7_addr = 0x1A6AC;
             } else if (fwv === "4.82") {
                 addr.toc_addr = 0x6F5558;
                 addr.gadget1_addr = 0x097604;
@@ -772,17 +779,16 @@
                 addr.gadget_mod4b_addr = 0x42C7D8;
                 addr.gadget_mod4c_addr = 0x054AF0;
                 addr.gadget_mod8_addr = 0x2BACB8;
+                addr.gadget8_addr = 0x20000;
+                addr.gadget3_addr = 0x0D9684;
+                addr.gadget7_addr = 0x1A6AC;
             } else if (fwv === "4.83" || fwv === "4.84" || fwv === "4.85" ||
                        fwv === "4.86" || fwv === "4.87" || fwv === "4.88" ||
                        fwv === "4.89" || fwv === "4.91" || fwv === "4.92" || fwv === "4.93") {
-                addr.toc_addr = 0x6F5558;
-                addr.gadget1_addr = 0x097604;
-                addr.gadget_mod1_addr = 0x60EFB8;
-                addr.gadget_mod2_addr = 0x013B74;
-                addr.gadget_mod4a_addr = 0x0D9684;
-                addr.gadget_mod4b_addr = 0x42C7D8;
-                addr.gadget_mod4c_addr = 0x054AF0;
-                addr.gadget_mod8_addr = 0x2BACB8;
+                // Use default (already set) – but ensure gadget8_addr is 0x2BACB8 for these firmwares
+                addr.gadget8_addr = 0x2BACB8;
+                addr.gadget3_addr = 0x0D9684;
+                addr.gadget7_addr = 0x423854;
             } else if (fwv === "4.90") {
                 addr.toc_addr = 0x6F5558;
                 addr.gadget1_addr = 0x097604;
@@ -792,10 +798,12 @@
                 addr.gadget_mod4b_addr = 0x42C7D4;
                 addr.gadget_mod4c_addr = 0x054AF0;
                 addr.gadget_mod8_addr = 0x2BACB4;
+                addr.gadget8_addr = 0x2BACB4;
+                addr.gadget3_addr = 0x0D9684;
+                addr.gadget7_addr = 0x1A6AC;
             }
-            // If unknown, keep the default 4.93 addresses.
 
-            // ---- Assign addresses to WebKit exploit variables ----
+            // ---- Assign addresses to WebKit variables ----
             var WebKit_toc_addr = addr.toc_addr;
             var WebKit_gadget1_addr = addr.gadget1_addr;
             var WebKit_gadget_mod1_addr = addr.gadget_mod1_addr;
@@ -804,12 +812,12 @@
             var WebKit_gadget_mod4b_addr = addr.gadget_mod4b_addr;
             var WebKit_gadget_mod4c_addr = addr.gadget_mod4c_addr;
             var WebKit_gadget_mod8_addr = addr.gadget_mod8_addr;
-            var WebKit_gadget8_addr = addr.gadget8_addr;
+            var WebKit_gadget8_addr = addr.gadget8_addr; // used in callsub
+            var WebKit_gadget3_addr = addr.gadget3_addr;
+            var WebKit_gadget7_addr = addr.gadget7_addr;
 
             // ---- Helper functions ----
-            function WebKit_showResult(str) {
-                showResult(str);
-            }
+            function WebKit_showResult(str) { showResult(str); }
 
             function WebKit_hex16(s) { return ('0000' + s).slice(-4); }
             function WebKit_s2hex(str) {
@@ -1010,7 +1018,14 @@
                 }
             }
 
-            // ---- Main initROP (unchanged – working version) ----
+            // ---- Constant strings used in exploit ----
+            var WebKit_base_file = "xxxx/dev_hdd0/theme/flash493.P3T";
+            var WebKit_dump_path = "/dev_usb000/";
+            var WebKit_dump_file = "PS3FlashDump493OFW.bin";
+            var WebKit_fulldumppath = WebKit_dump_path + WebKit_dump_file;
+            var WebKit_fwrite_mode = "wb";
+
+            // ---- Main initROP ----
             function WebKit_initROP(init) {
                 if (!document.getElementById('WebKit_init')) {
                     var btn = document.createElement('input');
@@ -1204,15 +1219,6 @@
                     "<strong>CFW compatible:</strong> " + (compat ? "Yes" : "No") + "</p>"
                 );
             }
-
-            // ---- Define missing variables used above ----
-            var WebKit_base_file = "xxxx/dev_hdd0/theme/flash493.P3T";
-            var WebKit_dump_path = "/dev_usb000/";
-            var WebKit_dump_file = "PS3FlashDump493OFW.bin";
-            var WebKit_fulldumppath = WebKit_dump_path + WebKit_dump_file;
-            var WebKit_fwrite_mode = "wb";
-            var WebKit_gadget3_addr = 0x0D9684;
-            var WebKit_gadget7_addr = 0x423854;
 
             // ---- Expose main entry ----
             window.runWebKitExploit = function() {
