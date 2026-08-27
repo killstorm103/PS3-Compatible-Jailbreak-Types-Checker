@@ -117,6 +117,8 @@
         .image-table img { border-radius: 8px; box-shadow: 2px 2px 6px rgba(0,0,0,0.3); }
         @media (max-width: 700px) { .image-table td { display: block; padding-right: 0; margin-bottom: 10px; } input[type="text"] { width: 100% !important; box-sizing: border-box; } select { width: auto; } }
         #WebKit_exploit, #WebKit_trigger { display: none; }
+        
+        
     </style>
 </head>
 <body>
@@ -143,17 +145,56 @@
             
             <button type="button" id="readFlashBtn" style="display:inline-block; margin-top:5px; margin-left:5px; padding:5px 15px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; vertical-align: middle;" onclick="toggleReadFlash()">Read Flash</button>
             
-            <div id="readFlashDropdown">
-                <label style="font-weight:bold; display:block; margin-bottom:5px;">Method:</label>
-                <select id="exploitMethod" style="padding:5px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; margin-bottom:10px;">
-                    <option value="flash9">1: FlashPlayer9 Exploit</option>
-                    <option value="webkit">2: WebKit Exploit (OFW: 4.80-4.82, HFW: 4.83+)</option>
-                    <option value="test">3: Test</option>
-                </select>
-                <br>
-                <button type="button" id="executeExploitBtn" style="padding:5px 15px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Execute Exploit</button>
-                <embed id="flash_exploit" type="application/x-shockwave-flash" width="0" height="0">
-            </div>
+          <div id="readFlashDropdown" style="margin-top:0;">
+
+    <!-- Left Column: Dropdown & Execute Button -->
+    <div style="display: inline-block; vertical-align: top; margin-right: 15px;">
+        <label style="font-weight:bold; display:block; margin-bottom:4px;">Method:</label>
+        <select id="exploitMethod" style="padding:5px 10px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; font-size:1rem; width:auto; margin-bottom: 12px;">
+            <option value="flash9">1: FlashPlayer9 Exploit</option>
+            <option value="webkit">2: WebKit Exploit</option>
+            <option value="test">3: Test</option>
+        </select>
+        
+        <div>
+            <button type="button" id="executeExploitBtn" style="padding:6px 18px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:1.45rem; margin:0;">
+                Execute Exploit
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Column: Info Box -->
+    <div style="display: inline-block; vertical-align: top; color:#aaa; font-size:1.1rem; line-height:1.5; background:#2a2a2a; padding:6px 12px; border-radius:4px; border-left:2px solid #dc3545;">
+        <strong style="color:#f79452;">Info:</strong>
+        
+        <!-- Dynamic Firmware Line (Visible by default) -->
+        <span id="ps3FwInfo" style="color:#ddd;">
+            Your current PS3 Firmware is: <span id="ps3FwVal"></span><br>
+        </span>
+
+        <span style="color:#ddd;">FlashPlayer9:</span>
+        <span style="color:#4CAF50;">OFW 4.80-4.93</span><br>
+        <span style="color:#ddd;">WebKit:</span>
+        <span style="color:#4CAF50;">OFW 4.80-4.82</span>
+        <span style="color:#4CAF50;">HFW 4.83-4.93</span>
+    </div>
+
+    <embed id="flash_exploit" type="application/x-shockwave-flash" width="0" height="0">
+</div>
+<script>
+    (function updatePS3Info() {
+        var fwContainer = document.getElementById("ps3FwInfo");
+        var fwVal = document.getElementById("ps3FwVal");
+        if (window.isPS3 && window.ps3Firmware) 
+        {
+            fwVal.innerHTML = window.ps3Firmware;
+        } else {
+            fwContainer.style.display = "none";
+        }
+    })();
+</script>
+
+
 
             <div id="datecode-box">
                 <span class="sub">Enter your PS3's date code or manufacturing date:</span><br>
@@ -249,8 +290,15 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             var btn = document.getElementById('executeExploitBtn');
-            if (btn) {
-                btn.addEventListener('click', function () {
+            if (btn) 
+            {
+                btn.addEventListener('click', function ()
+                {
+                    if (!window.isPS3)
+                    {
+                        alert("You must be on your PS3!");
+                        return;
+                    }
                     var selectedMethod = document.getElementById('exploitMethod').value;
                     if (selectedMethod === 'webkit') {
                         if (typeof window.runWebKitExploit === 'function') {
